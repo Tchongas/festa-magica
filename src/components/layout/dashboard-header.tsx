@@ -6,7 +6,7 @@ import { Button, Badge } from '@/components/ui';
 import { useKitCreatorStore } from '@/stores/kit-creator.store';
 import { useAuth } from '@/hooks/use-auth';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
 
 export function DashboardHeader() {
   const { step, reset } = useKitCreatorStore();

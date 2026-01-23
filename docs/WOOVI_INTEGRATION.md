@@ -41,7 +41,7 @@ Woovi é uma plataforma de pagamentos Pix que oferece:
 
 ### 3. Configurar webhook
 1. Dashboard → Configurações → Webhooks
-2. URL: `https://hub.com/api/webhooks/woovi`
+2. URL: `https://URL/api/webhooks/woovi`
 3. Eventos: `OPENPIX:CHARGE_COMPLETED`
 
 ## Variáveis de Ambiente (Hub)

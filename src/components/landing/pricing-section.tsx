@@ -5,7 +5,7 @@ import { Button, Badge } from '@/components/ui';
 import { SUBSCRIPTION_PLANS } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
 
 export function PricingSection() {
   return (

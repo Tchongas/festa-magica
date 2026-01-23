@@ -3,7 +3,7 @@
 import { Sparkles, ArrowRight, Star, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
 
 export function HeroSection() {
   return (

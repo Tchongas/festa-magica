@@ -6,7 +6,7 @@ import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
 
 export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
