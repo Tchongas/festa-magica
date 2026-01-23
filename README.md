@@ -95,7 +95,7 @@ src/
 ## Fluxo de Autenticação
 
 ```
-Hub.com                          FestaMagica.com
+Hub                          FestaMagica.com
    │                                   │
    │ 1. User buys access               │
    │ 2. Generate JWT token             │

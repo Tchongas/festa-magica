@@ -3,7 +3,7 @@ import { verifyHubToken } from '@/lib/hub/jwt';
 import { getOrCreateUser, getActiveSubscription, checkNonceUsed, markNonceUsed, createSession, syncSubscriptionFromHub } from '@/lib/supabase/db';
 import { cookies } from 'next/headers';
 
-const HUB_URL = process.env.HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.HUB_URL || 'https://allanhub.vercel.app/';
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token');

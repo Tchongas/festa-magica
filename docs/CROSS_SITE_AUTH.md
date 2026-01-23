@@ -69,7 +69,7 @@ O Hub é o portal central onde usuários compram acesso aos produtos. Quando um 
    │ - Redireciona para /criar           │
    │                                     │
    │ Se inválido:                        │
-   │ - Redireciona para hub.com/error    │
+   │ - Redireciona para URL/error    │
    └─────────────────────────────────────┘
 ```
 
@@ -103,7 +103,7 @@ const subscription = await db.query('subscriptions', {
 });
 
 if (!subscription) {
-  redirect('hub.com/renew?product=festa-magica');
+  redirect('URL.com/renew?product=festa-magica');
 }
 ```
 
@@ -196,7 +196,7 @@ DELETE FROM used_nonces WHERE created_at < now() - interval '1 hour';
 
 ```env
 # Hub Integration
-HUB_URL=https://hub.com
+HUB_URL=
 HUB_JWT_SECRET=your-shared-secret-min-32-chars
 
 # Supabase
@@ -242,5 +242,5 @@ Usuário acessa festamagica.com
             [Ir para Hub] [Tenho código]
                  │              │
                  ▼              ▼
-            hub.com      /auth/activate
+            hub        /auth/activate
 ```

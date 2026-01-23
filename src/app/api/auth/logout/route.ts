@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { deleteSession } from '@/lib/supabase/db';
 import { cookies } from 'next/headers';
 
-const HUB_URL = process.env.HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.HUB_URL || 'https://allanhub.vercel.app/';
 
 export async function POST(request: NextRequest) {
   try {

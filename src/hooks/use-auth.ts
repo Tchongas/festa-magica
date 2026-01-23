@@ -4,7 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
 
 export function useAuth() {
   const router = useRouter();

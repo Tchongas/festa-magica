@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { LoadingSpinner } from '@/components/shared';
 import { useState } from 'react';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://hub.com';
+const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
 
 export function AccessGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -133,7 +133,7 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
             <p className="text-center text-xs text-gray-400 mt-4">
               Adquira seu acesso em{' '}
               <a href={HUB_URL} className="text-pink-500 hover:underline">
-                hub.com
+                https://allanhub.vercel.app/
               </a>
             </p>
           </CardContent>
