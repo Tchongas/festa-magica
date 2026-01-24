@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyHubToken } from '@/lib/hub/jwt';
-import { getOrCreateUser, getActiveSubscription, checkNonceUsed, markNonceUsed, createSession, syncSubscriptionFromHub } from '@/lib/supabase/db';
+import { getUserById, getActiveUserProduct, checkNonceUsed, markNonceUsed, createSession } from '@/lib/supabase/db';
 import { cookies } from 'next/headers';
 
 const HUB_URL = process.env.HUB_URL || 'https://allanhub.vercel.app/';
@@ -22,14 +22,12 @@ export async function GET(request: NextRequest) {
 
     await markNonceUsed(payload.nonce);
 
-    const user = await getOrCreateUser(payload.sub, payload.email, payload.name);
-
-    let subscription = await getActiveSubscription(user.id);
-    
-    if (!subscription) {
-      subscription = await syncSubscriptionFromHub(user.id, payload.sub);
+    const user = await getUserById(payload.sub);
+    if (!user) {
+      return NextResponse.redirect(`${HUB_URL}/?error=no_access&product=festa-magica`);
     }
-    
+
+    const subscription = await getActiveUserProduct(user.id);
     if (!subscription) {
       return NextResponse.redirect(`${HUB_URL}/?error=no_access&product=festa-magica`);
     }

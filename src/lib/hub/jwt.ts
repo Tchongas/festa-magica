@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose';
 
 const HUB_JWT_SECRET = new TextEncoder().encode(
-  process.env.HUB_JWT_SECRET || 'your-secret-key-min-32-characters-long'
+  process.env.SUPABASE_JWT_SECRET || 'your-secret-key-min-32-characters-long'
 );
 
 export interface HubTokenPayload {

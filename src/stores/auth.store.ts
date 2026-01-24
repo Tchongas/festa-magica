@@ -1,14 +1,14 @@
 import { create } from 'zustand';
-import { User, Subscription } from '@/types';
+import { User, UserProduct } from '@/types';
 
 interface AuthStoreState {
   user: User | null;
-  subscription: Subscription | null;
+  subscription: UserProduct | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   hasActiveSubscription: boolean;
   setUser: (user: User | null) => void;
-  setSubscription: (subscription: Subscription | null) => void;
+  setSubscription: (subscription: UserProduct | null) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
 }
