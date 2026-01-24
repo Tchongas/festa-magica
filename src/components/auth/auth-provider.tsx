@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 import { LoadingSpinner } from '@/components/shared';
 
@@ -9,11 +9,16 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setUser, setSubscription, setLoading } = useAuthStore();
   const [initialized, setInitialized] = useState(false);
+  const hasVerified = useRef(false);
 
   useEffect(() => {
+    if (hasVerified.current) return;
+    hasVerified.current = true;
+
     async function verifySession() {
+      const { setUser, setSubscription, setLoading } = useAuthStore.getState();
+      
       try {
         const response = await fetch('/api/auth/verify');
         const data = await response.json();
@@ -36,7 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     verifySession();
-  }, [setUser, setSubscription, setLoading]);
+  }, []);
 
   if (!initialized) {
     return (
