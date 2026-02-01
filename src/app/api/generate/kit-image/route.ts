@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiClient } from '@/lib/gemini/client';
 import { KitItemType, IllustrationStyle } from '@/types';
+import { verifySession } from '@/lib/auth/verify-session';
 
 function getItemPrompt(type: KitItemType, age: string): string {
   switch (type) {
@@ -37,6 +38,11 @@ function getAspectRatio(type: KitItemType): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const { authenticated } = await verifySession();
+    if (!authenticated) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
     const {
       type,
       childDescription,

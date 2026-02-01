@@ -20,7 +20,7 @@ export function KitGallery({ items, onRetry }: KitGalleryProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       {items.map((item) => (
         <div
           key={item.id}
@@ -58,9 +58,9 @@ export function KitGallery({ items, onRetry }: KitGalleryProps) {
             )}
           </div>
 
-          <div className="p-4 flex items-center justify-between bg-white">
-            <div>
-              <h3 className="font-bold text-gray-800 text-lg leading-tight">{item.type}</h3>
+          <div className="p-3 md:p-4 flex items-center justify-between bg-white">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight truncate">{item.type}</h3>
               <div className="flex items-center gap-1 mt-1">
                 {item.status === 'completed' ? (
                   <span className="text-xs flex items-center gap-1 text-green-500 font-medium">
@@ -77,10 +77,10 @@ export function KitGallery({ items, onRetry }: KitGalleryProps) {
             {item.status === 'completed' && (
               <button
                 onClick={() => handleDownload(item.imageUrl, item.type)}
-                className="p-3 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-500 hover:text-white transition-colors"
+                className="p-2 md:p-3 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-500 hover:text-white transition-colors flex-shrink-0 ml-2"
                 title="Download"
               >
-                <Download className="w-5 h-5" />
+                <Download className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             )}
           </div>

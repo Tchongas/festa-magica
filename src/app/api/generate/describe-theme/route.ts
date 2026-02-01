@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiClient, SYSTEM_INSTRUCTION } from '@/lib/gemini/client';
+import { verifySession } from '@/lib/auth/verify-session';
 
 export async function POST(request: NextRequest) {
   try {
+    const { authenticated } = await verifySession();
+    if (!authenticated) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
     const { themeBase64 } = await request.json();
 
     if (!themeBase64) {
