@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getGeminiClient, SYSTEM_INSTRUCTION } from '@/lib/gemini/client';
 import { verifySession } from '@/lib/auth/verify-session';
+
+const schema = z.object({
+  photoBase64: z.string().min(1),
+  mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']).default('image/jpeg'),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,14 +15,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { photoBase64 } = await request.json();
-
-    if (!photoBase64) {
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
         { error: 'Foto da criança é obrigatória' },
         { status: 400 }
       );
     }
+    const { photoBase64, mimeType } = parsed.data;
 
     const ai = getGeminiClient();
 
@@ -25,7 +32,7 @@ export async function POST(request: NextRequest) {
       contents: [
         {
           parts: [
-            { inlineData: { mimeType: 'image/jpeg', data: photoBase64 } },
+            { inlineData: { mimeType, data: photoBase64 } },
             {
               text: "Descreva as características físicas faciais essenciais desta criança para que eu possa recriá-la em estilo ilustrado mantendo a semelhança. Foque em: formato do rosto, olhos, cabelo, sorriso e traços marcantes. Retorne apenas uma descrição técnica curta em português."
             }

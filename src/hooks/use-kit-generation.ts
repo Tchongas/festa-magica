@@ -33,6 +33,7 @@ export function useKitGeneration() {
         childDesc,
         themeDesc,
         userInput.childPhoto!,
+        userInput.childPhotoMimeType || 'image/jpeg',
         userInput.age,
         userInput.tone,
         userInput.style
@@ -64,14 +65,26 @@ export function useKitGeneration() {
     setKitItems(INITIAL_KIT_ITEMS);
 
     try {
-      const childDesc = await describeChild(userInput.childPhoto);
-      const themeDesc = await describeTheme(userInput.themePhoto);
+      const childDesc = await describeChild(
+        userInput.childPhoto,
+        userInput.childPhotoMimeType || 'image/jpeg'
+      );
+      const themeDesc = await describeTheme(
+        userInput.themePhoto,
+        userInput.themePhotoMimeType || 'image/jpeg'
+      );
 
       descriptionsCache.current = { child: childDesc, theme: themeDesc };
       setDescriptions(childDesc, themeDesc);
 
-      for (const item of INITIAL_KIT_ITEMS) {
-        await generateSingleItem(item, childDesc, themeDesc);
+      const CONCURRENCY = 3;
+      const items = [...INITIAL_KIT_ITEMS];
+      const chunks: KitItem[][] = [];
+      for (let i = 0; i < items.length; i += CONCURRENCY) {
+        chunks.push(items.slice(i, i + CONCURRENCY));
+      }
+      for (const chunk of chunks) {
+        await Promise.all(chunk.map((item) => generateSingleItem(item, childDesc, themeDesc)));
       }
     } catch (err) {
       setError("Ocorreu um erro ao processar os dados. Verifique sua conexão.");

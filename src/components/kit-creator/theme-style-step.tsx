@@ -31,7 +31,8 @@ export function ThemeStyleStep({ onGenerate }: ThemeStyleStepProps) {
             <ImageUpload
               id="theme-upload"
               value={userInput.themePhoto}
-              onChange={setThemePhoto}
+              mimeType={userInput.themePhotoMimeType}
+              onChange={(base64, mimeType) => setThemePhoto(base64, mimeType)}
               label="Referência de Tema (Opcional)"
               placeholder="Carregar Referência"
               accentColor="blue"

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { deleteSession } from '@/lib/supabase/db';
 import { cookies } from 'next/headers';
 
-const HUB_URL = process.env.HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,5 +32,5 @@ export async function GET(request: NextRequest) {
 
   cookieStore.delete('fm_session');
 
-  return NextResponse.redirect(HUB_URL);
+  return NextResponse.redirect(MEMBROS_URL);
 }

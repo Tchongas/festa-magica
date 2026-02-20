@@ -26,7 +26,8 @@ export function ChildUploadStep() {
             <ImageUpload
               id="child-upload"
               value={userInput.childPhoto}
-              onChange={setChildPhoto}
+              mimeType={userInput.childPhotoMimeType}
+              onChange={(base64, mimeType) => setChildPhoto(base64, mimeType)}
               label="Foto da Criança (Obrigatória)"
               placeholder="Carregar Foto"
               accentColor="pink"
@@ -61,9 +62,8 @@ export function ChildUploadStep() {
           <div className="flex justify-center">
             <Button
               size="lg"
-              onClick={() => canProceed && setStep(2)}
+              onClick={() => setStep(2)}
               disabled={!canProceed}
-              className={!canProceed ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none" : ""}
             >
               Próximo Passo <ChevronRight className="w-5 h-5" />
             </Button>

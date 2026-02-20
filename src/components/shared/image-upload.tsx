@@ -1,13 +1,16 @@
 "use client";
 
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fileToBase64 } from "@/lib/utils";
+
+const MAX_FILE_SIZE_MB = 10;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 interface ImageUploadProps {
   id: string;
   value: string | null;
-  onChange: (base64: string | null) => void;
+  mimeType?: string | null;
+  onChange: (base64: string | null, mimeType?: string | null) => void;
   label?: string;
   placeholder?: string;
   accentColor?: "pink" | "blue";
@@ -16,6 +19,7 @@ interface ImageUploadProps {
 export function ImageUpload({
   id,
   value,
+  mimeType,
   onChange,
   label,
   placeholder = "Carregar Foto",
@@ -23,10 +27,33 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const base64 = await fileToBase64(file);
-      onChange(base64);
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('Formato não suportado. Use JPG, PNG ou WebP.');
+      e.target.value = '';
+      return;
     }
+
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      alert(`A imagem deve ter no máximo ${MAX_FILE_SIZE_MB}MB.`);
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64String = (reader.result as string).split(',')[1];
+      onChange(base64String, file.type);
+    };
+    e.target.value = '';
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange(null, null);
   };
 
   const colorClasses = {
@@ -40,6 +67,8 @@ export function ImageUpload({
     },
   };
 
+  const previewSrc = value ? `data:${mimeType || 'image/jpeg'};base64,${value}` : null;
+
   return (
     <div className="space-y-4">
       {label && (
@@ -50,7 +79,7 @@ export function ImageUpload({
       <div className="relative group">
         <input
           type="file"
-          accept="image/*"
+          accept={ALLOWED_TYPES.join(',')}
           onChange={handleUpload}
           className="hidden"
           id={id}
@@ -62,9 +91,9 @@ export function ImageUpload({
             colorClasses[accentColor].border
           )}
         >
-          {value ? (
+          {previewSrc ? (
             <img
-              src={`data:image/jpeg;base64,${value}`}
+              src={previewSrc}
               alt="Preview"
               className="w-full h-full object-cover rounded-[28px]"
             />
@@ -74,9 +103,20 @@ export function ImageUpload({
                 <Upload className={cn("w-8 h-8", colorClasses[accentColor].icon)} />
               </div>
               <span className="text-gray-400 font-medium">{placeholder}</span>
+              <span className="text-xs text-gray-300 mt-1">JPG, PNG ou WebP • máx. {MAX_FILE_SIZE_MB}MB</span>
             </>
           )}
         </label>
+        {value && (
+          <button
+            onClick={handleClear}
+            className="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-md hover:bg-red-50 hover:text-red-500 text-gray-400 transition-colors z-10"
+            title="Remover imagem"
+            type="button"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );

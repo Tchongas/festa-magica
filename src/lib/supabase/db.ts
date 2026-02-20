@@ -2,7 +2,7 @@ import { createServiceRoleClient } from './server';
 import { User, UserProduct } from '@/types';
 
 export async function getUserById(userId: string): Promise<User | null> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   const { data, error } = await supabase
     .from('hub_users')
@@ -15,7 +15,7 @@ export async function getUserById(userId: string): Promise<User | null> {
 }
 
 export async function getActiveUserProduct(userId: string): Promise<UserProduct | null> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   const { data, error } = await supabase
     .from('user_products')
@@ -33,7 +33,7 @@ export async function getActiveUserProduct(userId: string): Promise<UserProduct 
 }
 
 export async function checkNonceUsed(nonce: string): Promise<boolean> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   const { data } = await supabase
     .from('used_nonces')
@@ -45,7 +45,7 @@ export async function checkNonceUsed(nonce: string): Promise<boolean> {
 }
 
 export async function markNonceUsed(nonce: string): Promise<void> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   await supabase
     .from('used_nonces')
@@ -53,7 +53,7 @@ export async function markNonceUsed(nonce: string): Promise<void> {
 }
 
 export async function createSession(userId: string): Promise<string> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   const token = crypto.randomUUID();
   const expiresAt = new Date();
@@ -72,7 +72,7 @@ export async function createSession(userId: string): Promise<string> {
 }
 
 export async function getSessionUser(token: string): Promise<{ user: User; subscription: UserProduct | null } | null> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   const { data: session } = await supabase
     .from('sessions')
@@ -94,7 +94,7 @@ export async function getSessionUser(token: string): Promise<{ user: User; subsc
 }
 
 export async function deleteSession(token: string): Promise<void> {
-  const supabase = await createServiceRoleClient();
+  const supabase = createServiceRoleClient();
   
   await supabase
     .from('sessions')

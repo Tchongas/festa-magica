@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getGeminiClient } from '@/lib/gemini/client';
-import { KitItemType, IllustrationStyle } from '@/types';
+import { KitItemType } from '@/types';
 import { verifySession } from '@/lib/auth/verify-session';
+
+const schema = z.object({
+  type: z.nativeEnum(KitItemType),
+  childDescription: z.string().min(1).max(2000),
+  themeDescription: z.string().max(2000).optional().default(''),
+  childPhotoBase64: z.string().min(1),
+  childPhotoMimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']).default('image/jpeg'),
+  age: z.string().max(50).optional().default(''),
+  tone: z.string().max(50).optional().default('Fofo'),
+  style: z.enum(['2D', '3D']).default('2D'),
+});
 
 function getItemPrompt(type: KitItemType, age: string): string {
   switch (type) {
@@ -43,22 +55,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const {
-      type,
-      childDescription,
-      themeDescription,
-      childPhotoBase64,
-      age,
-      tone,
-      style
-    } = await request.json();
-
-    if (!childPhotoBase64 || !childDescription) {
+    const body = await request.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
         { error: 'Dados insuficientes para geração' },
         { status: 400 }
       );
     }
+    const { type, childDescription, themeDescription, childPhotoBase64, childPhotoMimeType, age, tone, style } = parsed.data;
 
     const ai = getGeminiClient();
 
@@ -79,7 +84,7 @@ Mantenha consistência facial absoluta com a foto de referência enviada. Fundo 
       model: 'gemini-2.0-flash-exp-image-generation',
       contents: {
         parts: [
-          { inlineData: { mimeType: 'image/jpeg', data: childPhotoBase64 } },
+          { inlineData: { mimeType: childPhotoMimeType, data: childPhotoBase64 } },
           { text: fullPrompt }
         ]
       },

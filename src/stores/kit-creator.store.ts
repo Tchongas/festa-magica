@@ -14,8 +14,8 @@ interface KitCreatorState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setUserInput: (input: Partial<UserInput>) => void;
-  setChildPhoto: (photo: string | null) => void;
-  setThemePhoto: (photo: string | null) => void;
+  setChildPhoto: (photo: string | null, mimeType?: string | null) => void;
+  setThemePhoto: (photo: string | null, mimeType?: string | null) => void;
   setKitItems: (items: KitItem[]) => void;
   updateKitItem: (id: string, updates: Partial<KitItem>) => void;
   setDescriptions: (child: string, theme: string) => void;
@@ -24,7 +24,9 @@ interface KitCreatorState {
 
 const initialUserInput: UserInput = {
   childPhoto: null,
+  childPhotoMimeType: null,
   themePhoto: null,
+  themePhotoMimeType: null,
   age: '',
   features: '',
   tone: 'Fofo',
@@ -48,12 +50,12 @@ export const useKitCreatorStore = create<KitCreatorState>((set) => ({
     userInput: { ...state.userInput, ...input }
   })),
   
-  setChildPhoto: (photo) => set((state) => ({
-    userInput: { ...state.userInput, childPhoto: photo }
+  setChildPhoto: (photo, mimeType) => set((state) => ({
+    userInput: { ...state.userInput, childPhoto: photo, childPhotoMimeType: mimeType ?? null }
   })),
   
-  setThemePhoto: (photo) => set((state) => ({
-    userInput: { ...state.userInput, themePhoto: photo }
+  setThemePhoto: (photo, mimeType) => set((state) => ({
+    userInput: { ...state.userInput, themePhoto: photo, themePhotoMimeType: mimeType ?? null }
   })),
   
   setKitItems: (items) => set({ kitItems: items }),

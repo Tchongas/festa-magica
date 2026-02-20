@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
-import { LoadingSpinner } from '@/components/shared';
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [initialized, setInitialized] = useState(false);
   const hasVerified = useRef(false);
 
   useEffect(() => {
@@ -36,20 +34,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSubscription(null);
       } finally {
         setLoading(false);
-        setInitialized(true);
       }
     }
 
     verifySession();
   }, []);
-
-  if (!initialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-pink-50 to-white">
-        <LoadingSpinner text="Carregando..." />
-      </div>
-    );
-  }
 
   return <>{children}</>;
 }

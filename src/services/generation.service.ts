@@ -2,11 +2,11 @@ import { KitItem, KitItemType, INITIAL_KIT_ITEMS } from '@/types';
 
 const API_BASE = '/api/generate';
 
-export async function describeChild(photoBase64: string): Promise<string> {
+export async function describeChild(photoBase64: string, mimeType = 'image/jpeg'): Promise<string> {
   const response = await fetch(`${API_BASE}/describe-child`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ photoBase64 }),
+    body: JSON.stringify({ photoBase64, mimeType }),
   });
 
   if (!response.ok) {
@@ -17,11 +17,11 @@ export async function describeChild(photoBase64: string): Promise<string> {
   return data.description;
 }
 
-export async function describeTheme(themeBase64: string | null): Promise<string> {
+export async function describeTheme(themeBase64: string | null, mimeType = 'image/jpeg'): Promise<string> {
   const response = await fetch(`${API_BASE}/describe-theme`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ themeBase64 }),
+    body: JSON.stringify({ themeBase64, mimeType }),
   });
 
   if (!response.ok) {
@@ -37,6 +37,7 @@ export async function generateKitImage(
   childDescription: string,
   themeDescription: string,
   childPhotoBase64: string,
+  childPhotoMimeType: string,
   age: string,
   tone: string,
   style: string
@@ -49,6 +50,7 @@ export async function generateKitImage(
       childDescription,
       themeDescription,
       childPhotoBase64,
+      childPhotoMimeType,
       age,
       tone,
       style,

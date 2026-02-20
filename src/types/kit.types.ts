@@ -25,7 +25,9 @@ export type ToneType = 'Fofo' | 'Aventureiro' | 'Mágico' | 'Divertido';
 
 export interface UserInput {
   childPhoto: string | null;
+  childPhotoMimeType: string | null;
   themePhoto: string | null;
+  themePhotoMimeType: string | null;
   age: string;
   features: string;
   tone: ToneType;

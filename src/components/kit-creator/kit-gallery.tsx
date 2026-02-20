@@ -68,8 +68,10 @@ export function KitGallery({ items, onRetry }: KitGalleryProps) {
                   </span>
                 ) : item.status === 'error' ? (
                   <span className="text-xs text-red-400 font-medium">Falhou</span>
+                ) : item.status === 'generating' ? (
+                  <span className="text-xs text-pink-500 font-medium animate-pulse">Gerando...</span>
                 ) : (
-                  <span className="text-xs text-gray-400 font-medium">Aguardando...</span>
+                  <span className="text-xs text-gray-400 font-medium">Na fila</span>
                 )}
               </div>
             </div>
