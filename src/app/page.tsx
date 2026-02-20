@@ -4,7 +4,6 @@ import {
   HeroSection,
   FeaturesSection,
   KitShowcaseSection,
-  PricingSection,
   CTASection,
 } from "@/components/landing";
 
@@ -16,7 +15,6 @@ export default function Home() {
         <HeroSection />
         <FeaturesSection />
         <KitShowcaseSection />
-        <PricingSection />
         <CTASection />
       </main>
       <LandingFooter />

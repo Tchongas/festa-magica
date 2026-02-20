@@ -28,9 +28,6 @@ export function LandingHeader() {
           <a href="#como-funciona" className="text-gray-600 hover:text-pink-500 font-medium transition-colors">
             Como Funciona
           </a>
-          <a href="#precos" className="text-gray-600 hover:text-pink-500 font-medium transition-colors">
-            Preços
-          </a>
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
@@ -67,13 +64,6 @@ export function LandingHeader() {
             onClick={() => setMobileMenuOpen(false)}
           >
             Como Funciona
-          </a>
-          <a
-            href="#precos"
-            className="block text-gray-600 hover:text-pink-500 font-medium py-2"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Preços
           </a>
           <hr />
           {isAuthenticated && hasActiveSubscription ? (

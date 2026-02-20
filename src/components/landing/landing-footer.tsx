@@ -31,11 +31,6 @@ export function LandingFooter() {
                 </a>
               </li>
               <li>
-                <a href="#precos" className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base">
-                  Preços
-                </a>
-              </li>
-              <li>
                 <a 
                   href={HUB_URL} 
                   className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base inline-flex items-center gap-1"
