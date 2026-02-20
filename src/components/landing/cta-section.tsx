@@ -3,7 +3,7 @@
 import { Sparkles, Calendar, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function CTASection() {
   return (
@@ -23,12 +23,12 @@ export function CTASection() {
           Comece agora e surpreenda seus convidados!
         </p>
 
-        <a href={`${HUB_URL}/products/festa-magica`}>
+        <a href={MEMBROS_URL}>
           <Button
             size="lg"
             className="bg-white text-pink-600 hover:bg-gray-100 shadow-2xl text-lg px-10"
           >
-            Adquirir no Hub <ExternalLink className="w-5 h-5 ml-2" />
+            Adquira ou Acesse <ExternalLink className="w-5 h-5 ml-2" />
           </Button>
         </a>
       </div>

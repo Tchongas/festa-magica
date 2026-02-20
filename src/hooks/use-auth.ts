@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/stores/auth.store';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function useAuth() {
   const { 
@@ -18,14 +18,14 @@ export function useAuth() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       storeLogout();
-      window.location.href = HUB_URL;
+      window.location.href = MEMBROS_URL;
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
-  const redirectToHub = () => {
-    window.location.href = `${HUB_URL}`;
+  const redirectToMembros = () => {
+    window.location.href = MEMBROS_URL;
   };
 
   return {
@@ -35,6 +35,6 @@ export function useAuth() {
     isAuthenticated,
     hasActiveSubscription,
     logout,
-    redirectToHub,
+    redirectToMembros,
   };
 }

@@ -7,7 +7,7 @@ import { Button, Badge } from '@/components/ui';
 import { useKitCreatorStore } from '@/stores/kit-creator.store';
 import { useAuth } from '@/hooks/use-auth';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function DashboardHeader() {
   const { step, reset } = useKitCreatorStore();
@@ -66,10 +66,10 @@ export function DashboardHeader() {
               </div>
               <div className="p-2">
                 <a 
-                  href={HUB_URL}
+                  href={MEMBROS_URL}
                   className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
                 >
-                  <ExternalLink className="w-4 h-4" /> Ir para o Hub
+                  <ExternalLink className="w-4 h-4" /> Área de Membros
                 </a>
                 <button
                   onClick={logout}
@@ -117,11 +117,11 @@ export function DashboardHeader() {
           )}
 
           <a 
-            href={HUB_URL}
+            href={MEMBROS_URL}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <ExternalLink className="w-4 h-4" /> Ir para o Hub
+            <ExternalLink className="w-4 h-4" /> Área de Membros
           </a>
           
           <button

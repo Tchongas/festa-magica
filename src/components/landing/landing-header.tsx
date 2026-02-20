@@ -6,7 +6,7 @@ import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,9 +36,9 @@ export function LandingHeader() {
               <Button>Criar Kit</Button>
             </Link>
           ) : (
-            <a href={`${HUB_URL}/products/festa-magica`}>
+            <a href={MEMBROS_URL}>
               <Button>
-                Adquirir Acesso <ExternalLink className="w-4 h-4 ml-1" />
+                Adquira ou Acesse <ExternalLink className="w-4 h-4 ml-1" />
               </Button>
             </a>
           )}
@@ -71,9 +71,9 @@ export function LandingHeader() {
               <Button className="w-full">Criar Kit</Button>
             </Link>
           ) : (
-            <a href={`${HUB_URL}/products/festa-magica`} onClick={() => setMobileMenuOpen(false)}>
+            <a href={MEMBROS_URL} onClick={() => setMobileMenuOpen(false)}>
               <Button className="w-full">
-                Adquirir Acesso <ExternalLink className="w-4 h-4 ml-1" />
+                Adquira ou Acesse <ExternalLink className="w-4 h-4 ml-1" />
               </Button>
             </a>
           )}

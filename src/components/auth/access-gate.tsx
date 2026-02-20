@@ -5,7 +5,7 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } fro
 import { useAuthStore } from '@/stores/auth.store';
 import { LoadingSpinner } from '@/components/shared';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function AccessGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, hasActiveSubscription, isLoading } = useAuthStore();
@@ -36,16 +36,16 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
               className="w-full"
               variant="gradient"
               size="lg"
-              onClick={() => window.location.href = `${HUB_URL}/products/festa-magica`}
+              onClick={() => window.location.href = MEMBROS_URL}
             >
               <ExternalLink className="w-5 h-5" />
-              Ir para o Hub
+              Adquira ou Acesse
             </Button>
 
             <p className="text-center text-xs text-gray-400 mt-4">
               Adquira seu acesso em{' '}
-              <a href={HUB_URL} className="text-pink-500 hover:underline">
-                allanhub.vercel.app
+              <a href={MEMBROS_URL} className="text-pink-500 hover:underline">
+                membros.allanfulcher.com
               </a>
             </p>
           </CardContent>

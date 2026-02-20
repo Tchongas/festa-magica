@@ -1,6 +1,6 @@
 import { PartyPopper, Mail, Instagram, ExternalLink } from 'lucide-react';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function LandingFooter() {
   return (
@@ -32,10 +32,10 @@ export function LandingFooter() {
               </li>
               <li>
                 <a 
-                  href={HUB_URL} 
+                  href={MEMBROS_URL} 
                   className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base inline-flex items-center gap-1"
                 >
-                  Hub <ExternalLink className="w-3 h-3" />
+                  Área de Membros <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
             </ul>

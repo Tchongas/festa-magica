@@ -3,7 +3,7 @@
 import { Sparkles, ArrowRight, Star, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui';
 
-const HUB_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://allanhub.vercel.app/';
+const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export function HeroSection() {
   return (
@@ -34,9 +34,9 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a href={`${HUB_URL}/products/festa-magica`}>
+          <a href={MEMBROS_URL}>
             <Button variant="gradient" size="lg" className="text-lg px-8">
-              Adquirir Acesso <ExternalLink className="w-5 h-5 ml-2" />
+              Adquira ou Acesse <ExternalLink className="w-5 h-5 ml-2" />
             </Button>
           </a>
           <a href="#como-funciona">
@@ -47,7 +47,7 @@ export function HeroSection() {
         </div>
 
         <p className="text-sm text-gray-500 mt-6">
-          ✨ Acesso ilimitado por 3 meses • Compre no Hub
+          ✨ Acesso ilimitado por 3 meses
         </p>
       </div>
     </section>
