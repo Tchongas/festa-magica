@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn, Loader2, Mail, KeyRound, UserRound } from 'lucide-react';
@@ -29,7 +29,30 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+function EntrarPageFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center p-6">
+      <Card className="w-full max-w-md border-pink-100">
+        <CardContent className="py-10">
+          <div className="flex items-center justify-center gap-2 text-gray-500">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Carregando...
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function EntrarPage() {
+  return (
+    <Suspense fallback={<EntrarPageFallback />}>
+      <EntrarPageContent />
+    </Suspense>
+  );
+}
+
+function EntrarPageContent() {
   const searchParams = useSearchParams();
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
