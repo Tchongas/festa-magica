@@ -1,6 +1,6 @@
 "use client";
 
-import { PartyPopper, ExternalLink } from 'lucide-react';
+import { PartyPopper, ExternalLink, LogIn } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { useAuthStore } from '@/stores/auth.store';
 import { LoadingSpinner } from '@/components/shared';
@@ -40,6 +40,16 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
             >
               <ExternalLink className="w-5 h-5" />
               Adquira ou Acesse
+            </Button>
+
+            <Button
+              className="w-full"
+              variant="outline"
+              size="lg"
+              onClick={() => window.location.href = '/entrar'}
+            >
+              <LogIn className="w-5 h-5" />
+              Entrar com email e senha
             </Button>
 
             <p className="text-center text-xs text-gray-400 mt-4">

@@ -1,6 +1,25 @@
 import { createServiceRoleClient } from './server';
 import { User, UserProduct } from '@/types';
 
+export async function upsertHubUserFromAuthUser(authUser: { id: string; email?: string | null; user_metadata?: any }): Promise<void> {
+  const supabase = createServiceRoleClient();
+
+  const email = authUser.email || null;
+  const name = authUser.user_metadata?.name || authUser.user_metadata?.full_name || null;
+
+  await supabase
+    .from('hub_users')
+    .upsert(
+      {
+        id: authUser.id,
+        email,
+        name,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' }
+    );
+}
+
 export async function getUserById(userId: string): Promise<User | null> {
   const supabase = createServiceRoleClient();
   
