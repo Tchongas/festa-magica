@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (sessionToken) {
       await deleteSession(sessionToken);
     }
-
+//
     cookieStore.delete('fm_session');
 
     return NextResponse.json({ success: true });
