@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
 
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('fm_session')?.value;
+    //
 
     if (sessionToken) {
       await deleteSession(sessionToken);
