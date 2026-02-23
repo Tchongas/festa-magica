@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyHubToken } from '@/lib/hub/jwt';
 import {
   getUserById,
+  getUserByEmail,
   getActiveUserProduct,
   checkNonceUsed,
   markNonceUsed,
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
 
       await markNonceUsed(payload.nonce);
 
-      const user = await getUserById(payload.sub);
+      const user = (await getUserById(payload.sub)) || (await getUserByEmail(payload.email));
       if (!user) {
         return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
       }
@@ -51,6 +52,14 @@ export async function GET(request: NextRequest) {
         maxAge: 60 * 60 * 24 * 7,
         path: '/',
       });
+
+      const redirectTo = cookieStore.get('auth_redirect_to')?.value;
+      if (redirectTo) {
+        cookieStore.delete('auth_redirect_to');
+        if (redirectTo.startsWith('/')) {
+          return NextResponse.redirect(`${origin}${redirectTo}`);
+        }
+      }
 
       return NextResponse.redirect(new URL(DEFAULT_REDIRECT_PATH, request.url));
     } catch (error) {
