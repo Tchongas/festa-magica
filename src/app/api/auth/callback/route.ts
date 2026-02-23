@@ -13,6 +13,7 @@ import { cookies } from 'next/headers';
 import { createSupabaseServer } from '@/lib/supabase/server';
 
 const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+const DEFAULT_REDIRECT_PATH = '/criar';
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
         path: '/',
       });
 
-      return NextResponse.redirect(new URL('/criar', request.url));
+      return NextResponse.redirect(new URL(DEFAULT_REDIRECT_PATH, request.url));
     } catch (error) {
       console.error('Auth callback error:', error);
       return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(`${origin}/criar`);
+    return NextResponse.redirect(`${origin}${DEFAULT_REDIRECT_PATH}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
     return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);

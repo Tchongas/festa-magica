@@ -3,9 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { createSession, ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 
+const DEFAULT_REDIRECT_PATH = '/criar';
+
 function safeRedirectPath(redirectTo?: string): string {
-  if (!redirectTo) return '/criar';
-  return redirectTo.startsWith('/') ? redirectTo : '/criar';
+  if (!redirectTo) return DEFAULT_REDIRECT_PATH;
+  return redirectTo.startsWith('/') ? redirectTo : DEFAULT_REDIRECT_PATH;
 }
 
 function mapLoginError(message?: string): string {

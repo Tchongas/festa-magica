@@ -8,9 +8,11 @@ import {
   hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 
+const DEFAULT_REDIRECT_PATH = '/criar';
+
 function safeRedirectPath(redirectTo?: string): string {
-  if (!redirectTo) return '/criar';
-  return redirectTo.startsWith('/') ? redirectTo : '/criar';
+  if (!redirectTo) return DEFAULT_REDIRECT_PATH;
+  return redirectTo.startsWith('/') ? redirectTo : DEFAULT_REDIRECT_PATH;
 }
 
 export async function POST(request: NextRequest) {

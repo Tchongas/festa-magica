@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { LogIn, Loader2, Mail, KeyRound, UserRound } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/components/ui';
 
+const DEFAULT_REDIRECT_PATH = '/criar';
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24">
@@ -100,7 +102,7 @@ function EntrarPageContent() {
           email,
           password,
           name: mode === 'register' ? name : undefined,
-          redirect_to: redirectTo || '/criar',
+          redirect_to: redirectTo || DEFAULT_REDIRECT_PATH,
         }),
       });
 
@@ -117,7 +119,7 @@ function EntrarPageContent() {
         return;
       }
 
-      window.location.href = data.redirect_to || '/criar';
+      window.location.href = data.redirect_to || DEFAULT_REDIRECT_PATH;
     } catch {
       setEmailError('Erro ao autenticar com email. Tente novamente.');
     } finally {
