@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteSession } from '@/lib/supabase/db';
 import { cookies } from 'next/headers';
+import { createSupabaseServer } from '@/lib/supabase/server';
 
 const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createSupabaseServer();
+    await supabase.auth.signOut();
+
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get('fm_session')?.value;
 
@@ -23,6 +27,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const supabase = await createSupabaseServer();
+  await supabase.auth.signOut();
+
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('fm_session')?.value;
 

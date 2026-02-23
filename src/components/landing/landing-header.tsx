@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { PartyPopper, Menu, X, ExternalLink } from 'lucide-react';
+import { PartyPopper, Menu, X, ExternalLink, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
@@ -36,11 +36,18 @@ export function LandingHeader() {
               <Button>Criar Kit</Button>
             </Link>
           ) : (
-            <a href={MEMBROS_URL}>
-              <Button>
-                Adquira ou Acesse <ExternalLink className="w-4 h-4 ml-1" />
-              </Button>
-            </a>
+            <>
+              <Link href="/entrar">
+                <Button variant="outline">
+                  <LogIn className="w-4 h-4" /> Entrar / Criar conta
+                </Button>
+              </Link>
+              <a href={MEMBROS_URL}>
+                <Button>
+                  Comprar no Hub <ExternalLink className="w-4 h-4 ml-1" />
+                </Button>
+              </a>
+            </>
           )}
         </div>
 
@@ -71,11 +78,18 @@ export function LandingHeader() {
               <Button className="w-full">Criar Kit</Button>
             </Link>
           ) : (
-            <a href={MEMBROS_URL} onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full">
-                Adquira ou Acesse <ExternalLink className="w-4 h-4 ml-1" />
-              </Button>
-            </a>
+            <div className="space-y-2">
+              <Link href="/entrar" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full" variant="outline">
+                  <LogIn className="w-4 h-4" /> Entrar / Criar conta
+                </Button>
+              </Link>
+              <a href={MEMBROS_URL} onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full">
+                  Comprar no Hub <ExternalLink className="w-4 h-4 ml-1" />
+                </Button>
+              </a>
+            </div>
           )}
         </div>
       )}

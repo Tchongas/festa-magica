@@ -1,7 +1,8 @@
 "use client";
 
-import { Sparkles, ArrowRight, Star, ExternalLink } from 'lucide-react';
+import { ArrowRight, Star, ExternalLink, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui';
+import Link from 'next/link';
 
 const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
 
@@ -34,9 +35,14 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Link href="/entrar">
+            <Button variant="outline" size="lg" className="text-lg px-8">
+              <LogIn className="w-5 h-5" /> Entrar / Criar conta
+            </Button>
+          </Link>
           <a href={MEMBROS_URL}>
             <Button variant="gradient" size="lg" className="text-lg px-8">
-              Adquira ou Acesse <ExternalLink className="w-5 h-5 ml-2" />
+              Comprar no Hub <ExternalLink className="w-5 h-5 ml-2" />
             </Button>
           </a>
           <a href="#como-funciona">

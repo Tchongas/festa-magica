@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-import { createSession, getActiveUserProduct, upsertHubUserFromAuthUser } from '@/lib/supabase/db';
+import { createSession, ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,15 +33,14 @@ export async function POST(request: NextRequest) {
     }
 
     const authUser = data.user;
+    const hubUser = await ensureHubUserForAuthUser(authUser);
 
-    await upsertHubUserFromAuthUser(authUser);
-
-    const subscription = await getActiveUserProduct(authUser.id);
+    const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription) {
       return NextResponse.json({ error: 'Sem assinatura ativa' }, { status: 403 });
     }
 
-    const sessionToken = await createSession(authUser.id);
+    const sessionToken = await createSession(hubUser.id);
 
     const cookieStore = await cookies();
     cookieStore.set('fm_session', sessionToken, {

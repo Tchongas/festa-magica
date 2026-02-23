@@ -49,7 +49,7 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
               onClick={() => window.location.href = '/entrar'}
             >
               <LogIn className="w-5 h-5" />
-              Entrar com email e senha
+              Entrar ou Criar conta
             </Button>
 
             <p className="text-center text-xs text-gray-400 mt-4">
