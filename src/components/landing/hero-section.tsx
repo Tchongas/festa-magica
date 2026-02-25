@@ -52,9 +52,6 @@ export function HeroSection() {
           </a>
         </div>
 
-        <p className="text-sm text-gray-500 mt-6">
-          ✨ Acesso ilimitado por 3 meses
-        </p>
       </div>
     </section>
   );
