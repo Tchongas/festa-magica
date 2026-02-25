@@ -12,7 +12,7 @@ export interface UserProduct {
   product_id: string;
   status: 'active' | 'expired' | 'cancelled';
   activated_at: Date;
-  expires_at: Date;
+  expires_at: Date | null;
   activation_code: string;
   created_at: Date;
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { PartyPopper, RotateCcw, LogOut, User, Calendar, ExternalLink, Menu, X } from 'lucide-react';
+import { PartyPopper, RotateCcw, LogOut, User, ExternalLink, Menu, X } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
 import { useKitCreatorStore } from '@/stores/kit-creator.store';
 import { useAuth } from '@/hooks/use-auth';
@@ -13,10 +13,6 @@ export function DashboardHeader() {
   const { step, reset } = useKitCreatorStore();
   const { user, subscription, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const daysRemaining = subscription 
-    ? Math.ceil((new Date(subscription.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : 0;
 
   return (
     <header className="bg-white shadow-sm py-3 px-4 md:py-4 md:px-6 mb-6 md:mb-8 sticky top-0 z-50">
@@ -33,9 +29,9 @@ export function DashboardHeader() {
         <div className="hidden md:flex items-center gap-4">
           {subscription && (
             <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
-              <Calendar className="w-4 h-4 text-green-600" />
+              <PartyPopper className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-green-700">
-                {daysRemaining} dias restantes
+                Acesso vitalício ativo
               </span>
             </div>
           )}
@@ -60,7 +56,7 @@ export function DashboardHeader() {
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 {subscription && (
                   <Badge className="mt-2 bg-green-100 text-green-700">
-                    Ativo até {new Date(subscription.expires_at).toLocaleDateString('pt-BR')}
+                    Acesso vitalício
                   </Badge>
                 )}
               </div>
@@ -109,9 +105,9 @@ export function DashboardHeader() {
           
           {subscription && (
             <div className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-xl">
-              <Calendar className="w-4 h-4 text-green-600" />
+              <PartyPopper className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-green-700">
-                {daysRemaining} dias restantes
+                Acesso vitalício ativo
               </span>
             </div>
           )}

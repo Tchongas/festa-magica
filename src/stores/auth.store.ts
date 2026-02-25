@@ -28,8 +28,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
 
   setSubscription: (subscription) => set({
     subscription,
-    hasActiveSubscription: subscription?.status === 'active' && 
-      new Date(subscription.expires_at) > new Date(),
+    hasActiveSubscription: subscription?.status === 'active',
   }),
 
   setLoading: (isLoading) => set({ isLoading }),

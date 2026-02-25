@@ -26,7 +26,7 @@ O Hub é o portal central onde usuários compram acesso aos produtos. Quando um 
    │ Salva no banco:                     │
    │ - user_id                           │
    │ - product_id: 'festa-magica'        │
-   │ - expires_at: now + 3 months        │
+   │ - status: 'active' (vitalício)      │
    │ - activation_code                   │
    └────┬────────────────────────────────┘
         │
@@ -92,18 +92,17 @@ const used = await db.query('used_nonces', { nonce });
 if (used) throw new Error('Token já utilizado');
 ```
 
-### 3. Verificação de Subscription
+### 3. Verificação de Acesso Vitalício
 ```typescript
-// Sempre verifica se subscription está ativa
+// Sempre verifica se o acesso está ativo
 const subscription = await db.query('subscriptions', {
   user_id,
   product_id: 'festa-magica',
-  status: 'active',
-  expires_at: { $gt: now }
+  status: 'active'
 });
 
 if (!subscription) {
-  redirect('URL.com/renew?product=festa-magica');
+  redirect('URL.com/adquirir?product=festa-magica');
 }
 ```
 
@@ -155,9 +154,9 @@ CREATE TABLE subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id),
   product_id TEXT NOT NULL DEFAULT 'festa-magica',
-  status TEXT NOT NULL DEFAULT 'active', -- active, expired, cancelled
+  status TEXT NOT NULL DEFAULT 'active', -- active, cancelled
   starts_at TIMESTAMPTZ NOT NULL,
-  expires_at TIMESTAMPTZ NOT NULL,
+  expires_at TIMESTAMPTZ,
   activation_code TEXT UNIQUE,
   created_at TIMESTAMPTZ DEFAULT now()
 );

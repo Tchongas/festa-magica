@@ -167,8 +167,7 @@ export async function getActiveUserProduct(userId: string): Promise<UserProduct 
     .eq('user_id', userId)
     .eq('product_id', 'festa-magica')
     .eq('status', 'active')
-    .gt('expires_at', new Date().toISOString())
-    .order('expires_at', { ascending: false })
+    .order('updated_at', { ascending: false })
     .limit(1)
     .single();
 
