@@ -44,7 +44,7 @@ export function LandingHeader() {
               </Link>
               <a href={MEMBROS_URL}>
                 <Button>
-                  Comprar no Hub <ExternalLink className="w-4 h-4 ml-1" />
+                  Comprar <ExternalLink className="w-4 h-4 ml-1" />
                 </Button>
               </a>
             </>
@@ -86,7 +86,7 @@ export function LandingHeader() {
               </Link>
               <a href={MEMBROS_URL} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full">
-                  Comprar no Hub <ExternalLink className="w-4 h-4 ml-1" />
+                  Comprar <ExternalLink className="w-4 h-4 ml-1" />
                 </Button>
               </a>
             </div>
