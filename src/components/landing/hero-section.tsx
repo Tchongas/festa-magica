@@ -4,8 +4,11 @@ import { Star, ExternalLink, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui';
 import Link from 'next/link';
 import { MEMBROS_URL } from '@/lib/config';
+import { useAuthStore } from '@/stores/auth.store';
 
 export function HeroSection() {
+  const { isAuthenticated, hasActiveSubscription } = useAuthStore();
+
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
       <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 opacity-50" />
@@ -31,16 +34,26 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Link href="/entrar">
-            <Button variant="outline" size="lg" className="text-lg px-8">
-              <LogIn className="w-5 h-5" /> Entrar / Criar conta
-            </Button>
-          </Link>
-          <a href={MEMBROS_URL}>
-            <Button variant="gradient" size="lg" className="text-lg px-8">
-              Comprar <ExternalLink className="w-5 h-5 ml-2" />
-            </Button>
-          </a>
+          {isAuthenticated && hasActiveSubscription ? (
+            <Link href="/criar">
+              <Button variant="gradient" size="lg" className="text-lg px-8">
+                Criar Kit
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/entrar">
+                <Button variant="outline" size="lg" className="text-lg px-8">
+                  <LogIn className="w-5 h-5" /> Entrar / Criar conta
+                </Button>
+              </Link>
+              <a href={MEMBROS_URL}>
+                <Button variant="gradient" size="lg" className="text-lg px-8">
+                  Comprar <ExternalLink className="w-5 h-5 ml-2" />
+                </Button>
+              </a>
+            </>
+          )}
         </div>
 
       </div>
