@@ -134,19 +134,23 @@ export async function getUserById(userId: string): Promise<User | null> {
 
 export async function getActiveUserProduct(userId: string): Promise<UserProduct | null> {
   const supabase = createServiceRoleClient();
-  
+
   const { data, error } = await supabase
     .from('user_products')
     .select('*')
     .eq('user_id', userId)
-    .eq('product_id', PRODUCT_ID)
-    .eq('status', 'active')
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .single();
+    .order('created_at', { ascending: false })
+    .limit(25);
 
-  if (error || !data) return null;
-  return data as UserProduct;
+  if (error || !data?.length) return null;
+
+  const match = data.find((row) => {
+    const productId = String((row as { product_id?: string }).product_id || '').trim().toLowerCase();
+    const status = String((row as { status?: string }).status || '').trim().toLowerCase();
+    return productId === PRODUCT_ID && status === 'active';
+  });
+
+  return (match as UserProduct) || null;
 }
 
 export async function checkNonceUsed(nonce: string): Promise<boolean> {
