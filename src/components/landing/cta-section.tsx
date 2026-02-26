@@ -35,7 +35,7 @@ export function CTASection() {
               size="lg"
               className="bg-white text-pink-600 hover:bg-gray-100 shadow-2xl text-lg px-10"
             >
-              Comprar no Hub <ExternalLink className="w-5 h-5 ml-2" />
+              Comprar <ExternalLink className="w-5 h-5 ml-2" />
             </Button>
           </a>
         </div>

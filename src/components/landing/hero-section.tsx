@@ -42,7 +42,7 @@ export function HeroSection() {
           </Link>
           <a href={MEMBROS_URL}>
             <Button variant="gradient" size="lg" className="text-lg px-8">
-              Comprar no Hub <ExternalLink className="w-5 h-5 ml-2" />
+              Comprar <ExternalLink className="w-5 h-5 ml-2" />
             </Button>
           </a>
           <a href="#como-funciona">
