@@ -34,18 +34,21 @@ async function handleTokenCallback(token: string, origin: string) {
     const payload = await verifyHubToken(token);
 
     if (await checkNonceUsed(payload.nonce)) {
-      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+      console.error('Token callback: nonce already used', payload.nonce);
+      return NextResponse.redirect(`${MEMBROS_URL}?error=nonce_used`);
     }
     await markNonceUsed(payload.nonce);
 
     const user = (await getUserById(payload.sub)) || (await getUserByEmail(payload.email));
     if (!user) {
-      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+      console.error('Token callback: user not found', { sub: payload.sub, email: payload.email });
+      return NextResponse.redirect(`${MEMBROS_URL}?error=user_not_found`);
     }
 
     const subscription = await getActiveUserProduct(user.id);
     if (!subscription) {
-      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+      console.error('Token callback: no active subscription for user', { userId: user.id, email: user.email });
+      return NextResponse.redirect(`${MEMBROS_URL}?error=no_active_access`);
     }
 
     await setSessionCookie(user.id);
@@ -53,7 +56,7 @@ async function handleTokenCallback(token: string, origin: string) {
     return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('Token callback error:', error);
-    return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+    return NextResponse.redirect(`${MEMBROS_URL}?error=token_invalid`);
   }
 }
 
