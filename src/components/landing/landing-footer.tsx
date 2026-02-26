@@ -26,11 +26,6 @@ export function LandingFooter() {
             <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#como-funciona" className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base">
-                  Como Funciona
-                </a>
-              </li>
-              <li>
                 <a 
                   href={MEMBROS_URL} 
                   className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base inline-flex items-center gap-1"
@@ -42,19 +37,6 @@ export function LandingFooter() {
           </div>
 
           <div>
-            <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Contato</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="mailto:contato@festamagica.com.br" className="text-gray-400 hover:text-pink-400 transition-colors flex items-center gap-2 text-sm md:text-base">
-                  <Mail className="w-4 h-4" /> Email
-                </a>
-              </li>
-              <li>
-                <a href="https://instagram.com/festamagica" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-pink-400 transition-colors flex items-center gap-2 text-sm md:text-base">
-                  <Instagram className="w-4 h-4" /> Instagram
-                </a>
-              </li>
-            </ul>
           </div>
         </div>
 

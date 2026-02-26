@@ -16,9 +16,6 @@ export function HeroSection() {
       <div className="relative max-w-6xl mx-auto px-6 text-center">
         <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm mb-8">
           <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-          <span className="text-sm font-medium text-gray-600">
-            Mais de 1.000 festas criadas com IA
-          </span>
         </div>
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
@@ -43,11 +40,6 @@ export function HeroSection() {
           <a href={MEMBROS_URL}>
             <Button variant="gradient" size="lg" className="text-lg px-8">
               Comprar <ExternalLink className="w-5 h-5 ml-2" />
-            </Button>
-          </a>
-          <a href="#como-funciona">
-            <Button variant="outline" size="lg" className="text-lg px-8">
-              Ver Como Funciona <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </a>
         </div>
