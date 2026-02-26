@@ -100,7 +100,7 @@ export function ThemeStyleStep({ onGenerate }: ThemeStyleStepProps) {
               Voltar
             </Button>
             <Button variant="gradient" size="lg" onClick={onGenerate}>
-              Criar Kit Mágico! <Sparkles className="w-5 h-5" />
+              Escolher itens para gerar <Sparkles className="w-5 h-5" />
             </Button>
           </div>
         </div>

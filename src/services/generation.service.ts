@@ -41,12 +41,13 @@ export async function generateKitImage(
   childPhotoBase64: string,
   childPhotoMimeType: string,
   age: string,
+  features: string,
   tone: string,
   style: string
 ): Promise<string> {
   const data = await postJSON<{ imageUrl: string }>(
     'kit-image',
-    { type, childDescription, themeDescription, childPhotoBase64, childPhotoMimeType, age, tone, style },
+    { type, childDescription, themeDescription, childPhotoBase64, childPhotoMimeType, age, features, tone, style },
     `Erro ao gerar ${type}`
   );
   return data.imageUrl;

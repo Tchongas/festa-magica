@@ -9,15 +9,15 @@ import { GenerationStep } from "./generation-step";
 
 export function KitCreatorWizard() {
   const { step } = useKitCreatorStore();
-  const { startGeneration, retryItem } = useKitGeneration();
+  const { enterGenerationStep, generateItemOnDemand, retryItem } = useKitGeneration();
 
   return (
     <div>
       <StepIndicator currentStep={step} />
 
       {step === 1 && <ChildUploadStep />}
-      {step === 2 && <ThemeStyleStep onGenerate={startGeneration} />}
-      {step === 3 && <GenerationStep onRetry={retryItem} />}
+      {step === 2 && <ThemeStyleStep onGenerate={enterGenerationStep} />}
+      {step === 3 && <GenerationStep onGenerate={generateItemOnDemand} onRetry={retryItem} />}
     </div>
   );
 }

@@ -11,6 +11,7 @@ const schema = z.object({
   childPhotoBase64: z.string().min(1),
   childPhotoMimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']).default('image/jpeg'),
   age: z.string().max(50).optional().default(''),
+  features: z.string().max(500).optional().default(''),
   tone: z.string().max(50).optional().default('Fofo'),
   style: z.enum(['2D', '3D']).default('2D'),
 });
@@ -63,7 +64,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { type, childDescription, themeDescription, childPhotoBase64, childPhotoMimeType, age, tone, style } = parsed.data;
+    const {
+      type,
+      childDescription,
+      themeDescription,
+      childPhotoBase64,
+      childPhotoMimeType,
+      age,
+      features,
+      tone,
+      style,
+    } = parsed.data;
 
     const ai = getGeminiClient();
 
@@ -75,13 +86,14 @@ export async function POST(request: NextRequest) {
 
     const fullPrompt = `Crie uma ilustração de kit de festa: ${type}. 
 IDENTIDADE: Criança (${childDescription}), idade ${age || 'toddler'}, tom ${tone}. 
+DETALHES: ${features || 'Sem detalhes adicionais.'}
 ESTILO: ${styleDescription}.
 TEMA: ${themeDescription}.
 REQUISITO ESPECÍFICO: ${itemPrompt}.
 Mantenha consistência facial absoluta com a foto de referência enviada. Fundo neutro e iluminação suave.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp-image-generation',
+      model: 'gemini-2.5-flash-image',
       contents: {
         parts: [
           { inlineData: { mimeType: childPhotoMimeType, data: childPhotoBase64 } },
@@ -89,7 +101,9 @@ Mantenha consistência facial absoluta com a foto de referência enviada. Fundo 
         ]
       },
       config: {
-        responseModalities: ['image', 'text'],
+        imageConfig: {
+          aspectRatio: getAspectRatio(type as KitItemType),
+        },
       }
     });
 

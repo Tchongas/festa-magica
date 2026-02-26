@@ -1,0 +1,7 @@
+{
+  "name": "Festa Mágica - Criador de Kits",
+  "description": "IA especializada em criar ilustrações infantis profissionais e kits completos de festa com alta consistência visual.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

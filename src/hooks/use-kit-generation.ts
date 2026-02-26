@@ -20,6 +20,45 @@ export function useKitGeneration() {
   const { user, hasActiveSubscription } = useAuthStore();
   const descriptionsCache = useRef<{ child: string; theme: string } | null>(null);
 
+  const ensureCanGenerate = useCallback((): boolean => {
+    if (!userInput.childPhoto) {
+      setError("A foto da criança é obrigatória!");
+      return false;
+    }
+
+    if (!user || !hasActiveSubscription) {
+      setError("Você precisa ter uma assinatura ativa para gerar kits.");
+      return false;
+    }
+
+    return true;
+  }, [userInput.childPhoto, user, hasActiveSubscription, setError]);
+
+  const ensureDescriptions = useCallback(async (): Promise<{ child: string; theme: string } | null> => {
+    if (descriptionsCache.current) {
+      return descriptionsCache.current;
+    }
+
+    try {
+      const childDesc = await describeChild(
+        userInput.childPhoto!,
+        userInput.childPhotoMimeType || 'image/jpeg'
+      );
+      const themeDesc = await describeTheme(
+        userInput.themePhoto,
+        userInput.themePhotoMimeType || 'image/jpeg'
+      );
+
+      const cached = { child: childDesc, theme: themeDesc };
+      descriptionsCache.current = cached;
+      setDescriptions(childDesc, themeDesc);
+      return cached;
+    } catch {
+      setError("Ocorreu um erro ao processar os dados. Verifique sua conexão.");
+      return null;
+    }
+  }, [userInput, setDescriptions, setError]);
+
   const generateSingleItem = useCallback(async (
     item: KitItem,
     childDesc: string,
@@ -35,6 +74,7 @@ export function useKitGeneration() {
         userInput.childPhoto!,
         userInput.childPhotoMimeType || 'image/jpeg',
         userInput.age,
+        userInput.features,
         userInput.tone,
         userInput.style
       );
@@ -48,66 +88,37 @@ export function useKitGeneration() {
     }
   }, [userInput, updateKitItem]);
 
-  const startGeneration = useCallback(async () => {
-    if (!userInput.childPhoto) {
-      setError("A foto da criança é obrigatória!");
-      return;
-    }
+  const enterGenerationStep = useCallback(() => {
+    if (!ensureCanGenerate()) return;
 
-    if (!user || !hasActiveSubscription) {
-      setError("Você precisa ter uma assinatura ativa para gerar kits.");
-      return;
-    }
-
-    setLoading(true);
+    descriptionsCache.current = null;
     setError(null);
     setStep(3);
     setKitItems(INITIAL_KIT_ITEMS);
+  }, [ensureCanGenerate, setError, setStep, setKitItems]);
+
+  const generateItemOnDemand = useCallback(async (item: KitItem) => {
+    if (!ensureCanGenerate()) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
-      const childDesc = await describeChild(
-        userInput.childPhoto,
-        userInput.childPhotoMimeType || 'image/jpeg'
-      );
-      const themeDesc = await describeTheme(
-        userInput.themePhoto,
-        userInput.themePhotoMimeType || 'image/jpeg'
-      );
-
-      descriptionsCache.current = { child: childDesc, theme: themeDesc };
-      setDescriptions(childDesc, themeDesc);
-
-      const CONCURRENCY = 3;
-      const items = [...INITIAL_KIT_ITEMS];
-      const chunks: KitItem[][] = [];
-      for (let i = 0; i < items.length; i += CONCURRENCY) {
-        chunks.push(items.slice(i, i + CONCURRENCY));
-      }
-      for (const chunk of chunks) {
-        await Promise.all(chunk.map((item) => generateSingleItem(item, childDesc, themeDesc)));
-      }
-    } catch (err) {
-      setError("Ocorreu um erro ao processar os dados. Verifique sua conexão.");
+      const descriptions = await ensureDescriptions();
+      if (!descriptions) return;
+      await generateSingleItem(item, descriptions.child, descriptions.theme);
     } finally {
       setLoading(false);
     }
-  }, [userInput, user, hasActiveSubscription, setStep, setLoading, setError, setKitItems, setDescriptions, generateSingleItem]);
+  }, [ensureCanGenerate, ensureDescriptions, generateSingleItem, setLoading, setError]);
 
   const retryItem = useCallback(async (item: KitItem) => {
-    if (!userInput.childPhoto || !descriptionsCache.current || !user || !hasActiveSubscription) {
-      setError("Você precisa ter uma assinatura ativa.");
-      return;
-    }
-
-    await generateSingleItem(
-      item,
-      descriptionsCache.current.child,
-      descriptionsCache.current.theme
-    );
-  }, [userInput, user, hasActiveSubscription, generateSingleItem, setError]);
+    await generateItemOnDemand(item);
+  }, [generateItemOnDemand]);
 
   return {
-    startGeneration,
+    enterGenerationStep,
+    generateItemOnDemand,
     retryItem,
   };
 }

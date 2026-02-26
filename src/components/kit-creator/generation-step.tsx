@@ -9,10 +9,11 @@ import { KitItem } from "@/types";
 import { downloadAllFiles } from "@/lib/download";
 
 interface GenerationStepProps {
+  onGenerate: (item: KitItem) => void;
   onRetry: (item: KitItem) => void;
 }
 
-export function GenerationStep({ onRetry }: GenerationStepProps) {
+export function GenerationStep({ onGenerate, onRetry }: GenerationStepProps) {
   const { userInput, kitItems, error, reset } = useKitCreatorStore();
 
   const completedCount = kitItems.filter((i) => i.status === 'completed').length;
@@ -43,7 +44,7 @@ export function GenerationStep({ onRetry }: GenerationStepProps) {
         {error && <ErrorMessage message={error} />}
       </div>
 
-      <KitGallery items={kitItems} onRetry={onRetry} />
+      <KitGallery items={kitItems} onGenerate={onGenerate} onRetry={onRetry} />
 
       <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[40px] shadow-lg border-2 border-pink-50 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
         <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
@@ -58,7 +59,7 @@ export function GenerationStep({ onRetry }: GenerationStepProps) {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {isAllDone && completedCount > 0 && (
+          {completedCount > 0 && (
             <Button
               variant="gradient"
               onClick={() =>
