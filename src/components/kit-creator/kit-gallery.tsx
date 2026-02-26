@@ -67,17 +67,17 @@ export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
                   <span className="text-xs text-gray-400 font-medium">Ainda não gerado</span>
                 )}
               </div>
-            </div>
 
-            {item.status === 'pending' && (
-              <button
-                onClick={() => onGenerate(item)}
-                className="px-3 py-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors flex items-center gap-1.5 flex-shrink-0 ml-2 text-xs font-semibold"
-                title="Gerar este item"
-              >
-                <Sparkles className="w-3.5 h-3.5" /> Gerar
-              </button>
-            )}
+              {item.status === 'pending' && (
+                <button
+                  onClick={() => onGenerate(item)}
+                  className="mt-3 w-full px-4 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 text-sm md:text-base font-bold shadow-md shadow-pink-200"
+                  title="Gerar este item"
+                >
+                  <Sparkles className="w-4 h-4" /> Gerar este item
+                </button>
+              )}
+            </div>
 
             {item.status === 'completed' && (
               <button
