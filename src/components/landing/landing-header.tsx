@@ -6,7 +6,7 @@ import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+import { MEMBROS_URL } from '@/lib/config';
 
 export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

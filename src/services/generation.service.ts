@@ -1,34 +1,36 @@
-import { KitItem, KitItemType, INITIAL_KIT_ITEMS } from '@/types';
+import { KitItemType } from '@/types';
 
 const API_BASE = '/api/generate';
 
-export async function describeChild(photoBase64: string, mimeType = 'image/jpeg'): Promise<string> {
-  const response = await fetch(`${API_BASE}/describe-child`, {
+async function postJSON<T>(endpoint: string, body: unknown, errorMsg: string): Promise<T> {
+  const response = await fetch(`${API_BASE}/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ photoBase64, mimeType }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    throw new Error('Erro ao analisar foto da criança');
+    throw new Error(errorMsg);
   }
 
-  const data = await response.json();
+  return response.json();
+}
+
+export async function describeChild(photoBase64: string, mimeType = 'image/jpeg'): Promise<string> {
+  const data = await postJSON<{ description: string }>(
+    'describe-child',
+    { photoBase64, mimeType },
+    'Erro ao analisar foto da criança'
+  );
   return data.description;
 }
 
 export async function describeTheme(themeBase64: string | null, mimeType = 'image/jpeg'): Promise<string> {
-  const response = await fetch(`${API_BASE}/describe-theme`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ themeBase64, mimeType }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Erro ao analisar tema');
-  }
-
-  const data = await response.json();
+  const data = await postJSON<{ description: string }>(
+    'describe-theme',
+    { themeBase64, mimeType },
+    'Erro ao analisar tema'
+  );
   return data.description;
 }
 
@@ -42,25 +44,10 @@ export async function generateKitImage(
   tone: string,
   style: string
 ): Promise<string> {
-  const response = await fetch(`${API_BASE}/kit-image`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type,
-      childDescription,
-      themeDescription,
-      childPhotoBase64,
-      childPhotoMimeType,
-      age,
-      tone,
-      style,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Erro ao gerar ${type}`);
-  }
-
-  const data = await response.json();
+  const data = await postJSON<{ imageUrl: string }>(
+    'kit-image',
+    { type, childDescription, themeDescription, childPhotoBase64, childPhotoMimeType, age, tone, style },
+    `Erro ao gerar ${type}`
+  );
   return data.imageUrl;
 }

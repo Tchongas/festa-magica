@@ -1,13 +1,12 @@
-import { PartyPopper, Mail, Instagram, ExternalLink } from 'lucide-react';
-
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+import { PartyPopper, ExternalLink } from 'lucide-react';
+import { MEMBROS_URL } from '@/lib/config';
 
 export function LandingFooter() {
   return (
     <footer className="bg-gray-900 text-white py-12 md:py-16">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
-          <div className="col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-12">
+          <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-pink-500 p-2 rounded-xl">
                 <PartyPopper className="text-white w-5 h-5 md:w-6 md:h-6" />
@@ -33,10 +32,15 @@ export function LandingFooter() {
                   Área de Membros <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
+              <li>
+                <a 
+                  href="/entrar" 
+                  className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base"
+                >
+                  Entrar / Criar conta
+                </a>
+              </li>
             </ul>
-          </div>
-
-          <div>
           </div>
         </div>
 

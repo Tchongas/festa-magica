@@ -1,10 +1,9 @@
 "use client";
 
-import { ArrowRight, Star, ExternalLink, LogIn } from 'lucide-react';
+import { Star, ExternalLink, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui';
 import Link from 'next/link';
-
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+import { MEMBROS_URL } from '@/lib/config';
 
 export function HeroSection() {
   return (

@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from './server';
 import { User, UserProduct } from '@/types';
+import { PRODUCT_ID } from '@/lib/config';
 
 function normalizeEmail(email?: string | null): string {
   return String(email || '').trim().toLowerCase();
@@ -27,14 +28,6 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return data as User;
 }
 
-export async function hasActiveFestaMagicaAccessByEmail(email: string): Promise<boolean> {
-  const user = await getUserByEmail(email);
-  if (!user) return false;
-
-  const subscription = await getActiveUserProduct(user.id);
-  return !!subscription;
-}
-
 export async function hasFestaMagicaProductByEmail(email: string): Promise<boolean> {
   const user = await getUserByEmail(email);
   if (!user) return false;
@@ -44,31 +37,12 @@ export async function hasFestaMagicaProductByEmail(email: string): Promise<boole
     .from('user_products')
     .select('id')
     .eq('user_id', user.id)
-    .eq('product_id', 'festa-magica')
+    .eq('product_id', PRODUCT_ID)
     .limit(1)
     .maybeSingle();
 
   if (error || !data) return false;
   return true;
-}
-
-export async function upsertHubUserFromAuthUser(authUser: { id: string; email?: string | null; user_metadata?: any }): Promise<void> {
-  const supabase = createServiceRoleClient();
-
-  const email = normalizeEmail(authUser.email);
-  const name = authUser.user_metadata?.name || authUser.user_metadata?.full_name || getFallbackName(email);
-
-  await supabase
-    .from('hub_users')
-    .upsert(
-      {
-        id: authUser.id,
-        email: email || null,
-        name,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    );
 }
 
 export async function ensureHubUserForAuthUser(authUser: { id: string; email?: string | null; user_metadata?: any }): Promise<User> {
@@ -165,7 +139,7 @@ export async function getActiveUserProduct(userId: string): Promise<UserProduct 
     .from('user_products')
     .select('*')
     .eq('user_id', userId)
-    .eq('product_id', 'festa-magica')
+    .eq('product_id', PRODUCT_ID)
     .eq('status', 'active')
     .order('updated_at', { ascending: false })
     .limit(1)
@@ -206,7 +180,7 @@ export async function createSession(userId: string): Promise<string> {
     .from('sessions')
     .insert({
       user_id: userId,
-      product_id: 'festa-magica',
+      product_id: PRODUCT_ID,
       token,
       expires_at: expiresAt.toISOString(),
     });
@@ -221,7 +195,7 @@ export async function getSessionUser(token: string): Promise<{ user: User; subsc
     .from('sessions')
     .select('user_id, expires_at')
     .eq('token', token)
-    .eq('product_id', 'festa-magica')
+    .eq('product_id', PRODUCT_ID)
     .single();
 
   if (!session || new Date(session.expires_at) < new Date()) {

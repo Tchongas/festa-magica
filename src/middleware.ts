@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const SESSION_COOKIE = 'fm_session';
 const PROTECTED_PATHS = ['/criar'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   const isProtected = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
 
   if (isProtected) {
-    const sessionToken = request.cookies.get('fm_session')?.value;
+    const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
 
     if (!sessionToken) {
-      const membrosUrl = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
-      return NextResponse.redirect(membrosUrl);
+      const loginUrl = new URL('/entrar', request.url);
+      loginUrl.searchParams.set('redirect_to', pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 

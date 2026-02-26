@@ -3,6 +3,7 @@
 import { Download, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import { KitItem } from "@/types";
 import { cn } from "@/lib/utils";
+import { downloadFile } from "@/lib/download";
 
 interface KitGalleryProps {
   items: KitItem[];
@@ -10,14 +11,6 @@ interface KitGalleryProps {
 }
 
 export function KitGallery({ items, onRetry }: KitGalleryProps) {
-  const handleDownload = (imageUrl: string, filename: string) => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `${filename}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -78,7 +71,7 @@ export function KitGallery({ items, onRetry }: KitGalleryProps) {
 
             {item.status === 'completed' && (
               <button
-                onClick={() => handleDownload(item.imageUrl, item.type)}
+                onClick={() => downloadFile(item.imageUrl, `${item.type}.png`)}
                 className="p-2 md:p-3 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-500 hover:text-white transition-colors flex-shrink-0 ml-2"
                 title="Download"
               >

@@ -1,6 +1,7 @@
 "use client";
 
-import { DashboardHeader, Footer, ProtectedRoute } from '@/components/layout';
+import { DashboardHeader, Footer } from '@/components/layout';
+import { AccessGate } from '@/components/auth';
 
 export default function DashboardLayout({
   children,
@@ -8,7 +9,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute>
+    <AccessGate>
       <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
         <DashboardHeader />
         <main className="max-w-6xl mx-auto px-6 pb-12">
@@ -16,6 +17,6 @@ export default function DashboardLayout({
         </main>
         <Footer />
       </div>
-    </ProtectedRoute>
+    </AccessGate>
   );
 }

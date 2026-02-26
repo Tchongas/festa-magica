@@ -1,44 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteSession } from '@/lib/supabase/db';
-import { cookies } from 'next/headers';
 import { createSupabaseServer } from '@/lib/supabase/server';
+import { clearSessionCookie } from '@/lib/auth/helpers';
+import { MEMBROS_URL } from '@/lib/config';
 
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
-
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createSupabaseServer();
-    await supabase.auth.signOut();
-
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('fm_session')?.value;
-    //
-
-    if (sessionToken) {
-      await deleteSession(sessionToken);
-    }
-//
-    cookieStore.delete('fm_session');
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Logout error:', error);
-    return NextResponse.json({ success: true });
-  }
-}
-
-export async function GET(request: NextRequest) {
+async function performLogout(): Promise<void> {
   const supabase = await createSupabaseServer();
   await supabase.auth.signOut();
 
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get('fm_session')?.value;
-
-  if (sessionToken) {
-    await deleteSession(sessionToken);
+  const token = await clearSessionCookie();
+  if (token) {
+    await deleteSession(token);
   }
+}
 
-  cookieStore.delete('fm_session');
+export async function POST(_request: NextRequest) {
+  try {
+    await performLogout();
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+  return NextResponse.json({ success: true });
+}
 
+export async function GET(_request: NextRequest) {
+  try {
+    await performLogout();
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
   return NextResponse.redirect(MEMBROS_URL);
 }

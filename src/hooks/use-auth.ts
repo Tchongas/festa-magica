@@ -1,8 +1,7 @@
 "use client";
 
 import { useAuthStore } from '@/stores/auth.store';
-
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+import { MEMBROS_URL } from '@/lib/config';
 
 export function useAuth() {
   const { 
@@ -24,10 +23,6 @@ export function useAuth() {
     }
   };
 
-  const redirectToMembros = () => {
-    window.location.href = MEMBROS_URL;
-  };
-
   return {
     user,
     subscription,
@@ -35,6 +30,5 @@ export function useAuth() {
     isAuthenticated,
     hasActiveSubscription,
     logout,
-    redirectToMembros,
   };
 }

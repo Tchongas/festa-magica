@@ -1,11 +1,12 @@
 import { SignJWT, jwtVerify } from 'jose';
+import { PRODUCT_ID } from '@/lib/config';
 
 const HUB_JWT_SECRET = new TextEncoder().encode(
   process.env.HUB_JWT_SECRET || 'your-secret-key-min-32-characters-long'
 );
 
 export interface HubTokenPayload {
-  sub: string; // hub_user_id
+  sub: string;
   email: string;
   name?: string;
   product: string;
@@ -20,7 +21,7 @@ export async function verifyHubToken(token: string): Promise<HubTokenPayload> {
       algorithms: ['HS256'],
     });
 
-    if (payload.product !== 'festa-magica') {
+    if (payload.product !== PRODUCT_ID) {
       throw new Error('Token não é para este produto');
     }
 

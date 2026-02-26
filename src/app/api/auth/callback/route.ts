@@ -6,15 +6,12 @@ import {
   getActiveUserProduct,
   checkNonceUsed,
   markNonceUsed,
-  createSession,
   ensureHubUserForAuthUser,
   hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
-import { cookies } from 'next/headers';
 import { createSupabaseServer } from '@/lib/supabase/server';
-
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
-const DEFAULT_REDIRECT_PATH = '/criar';
+import { setSessionCookie, resolveRedirectUrl } from '@/lib/auth/helpers';
+import { MEMBROS_URL } from '@/lib/config';
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -22,56 +19,45 @@ export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token');
 
   if (token) {
-    try {
-      const payload = await verifyHubToken(token);
-
-      const nonceUsed = await checkNonceUsed(payload.nonce);
-      if (nonceUsed) {
-        return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
-      }
-
-      await markNonceUsed(payload.nonce);
-
-      const user = (await getUserById(payload.sub)) || (await getUserByEmail(payload.email));
-      if (!user) {
-        return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
-      }
-
-      const subscription = await getActiveUserProduct(user.id);
-      if (!subscription) {
-        return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
-      }
-
-      const sessionToken = await createSession(user.id);
-
-      const cookieStore = await cookies();
-      cookieStore.set('fm_session', sessionToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      });
-
-      const redirectTo = cookieStore.get('auth_redirect_to')?.value;
-      if (redirectTo) {
-        cookieStore.delete('auth_redirect_to');
-        if (redirectTo.startsWith('/')) {
-          return NextResponse.redirect(`${origin}${redirectTo}`);
-        }
-      }
-
-      return NextResponse.redirect(new URL(DEFAULT_REDIRECT_PATH, request.url));
-    } catch (error) {
-      console.error('Auth callback error:', error);
-      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
-    }
+    return handleTokenCallback(token, origin);
   }
 
   if (!code) {
     return NextResponse.redirect(`${origin}/entrar?error=auth_failed`);
   }
 
+  return handleOAuthCallback(code, origin);
+}
+
+async function handleTokenCallback(token: string, origin: string) {
+  try {
+    const payload = await verifyHubToken(token);
+
+    if (await checkNonceUsed(payload.nonce)) {
+      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+    }
+    await markNonceUsed(payload.nonce);
+
+    const user = (await getUserById(payload.sub)) || (await getUserByEmail(payload.email));
+    if (!user) {
+      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+    }
+
+    const subscription = await getActiveUserProduct(user.id);
+    if (!subscription) {
+      return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+    }
+
+    await setSessionCookie(user.id);
+    const redirectUrl = await resolveRedirectUrl(origin);
+    return NextResponse.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Token callback error:', error);
+    return NextResponse.redirect(`${MEMBROS_URL}?error=no_access`);
+  }
+}
+
+async function handleOAuthCallback(code: string, origin: string) {
   try {
     const supabase = await createSupabaseServer();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -101,26 +87,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/entrar?error=no_active_access`);
     }
 
-    const sessionToken = await createSession(hubUser.id);
-
-    const cookieStore = await cookies();
-    cookieStore.set('fm_session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
-
-    const redirectTo = cookieStore.get('auth_redirect_to')?.value;
-    if (redirectTo) {
-      cookieStore.delete('auth_redirect_to');
-      if (redirectTo.startsWith('/')) {
-        return NextResponse.redirect(`${origin}${redirectTo}`);
-      }
-    }
-
-    return NextResponse.redirect(`${origin}${DEFAULT_REDIRECT_PATH}`);
+    await setSessionCookie(hubUser.id);
+    const redirectUrl = await resolveRedirectUrl(origin);
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('OAuth callback error:', error);
     return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);

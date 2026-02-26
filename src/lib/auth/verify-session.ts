@@ -1,10 +1,11 @@
 import { cookies } from 'next/headers';
 import { getSessionUser } from '@/lib/supabase/db';
+import { SESSION_COOKIE_NAME } from '@/lib/config';
 
 export async function verifySession(): Promise<{ authenticated: boolean; userId?: string }> {
   try {
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('fm_session')?.value;
+    const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionToken) {
       return { authenticated: false };

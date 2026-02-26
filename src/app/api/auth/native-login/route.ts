@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
-import { createSession, ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { setSessionCookie } from '@/lib/auth/helpers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +21,7 @@ export async function POST(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       },
     });
 
@@ -32,24 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 });
     }
 
-    const authUser = data.user;
-    const hubUser = await ensureHubUserForAuthUser(authUser);
+    const hubUser = await ensureHubUserForAuthUser(data.user);
 
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription) {
       return NextResponse.json({ error: 'Sem assinatura ativa' }, { status: 403 });
     }
 
-    const sessionToken = await createSession(hubUser.id);
-
-    const cookieStore = await cookies();
-    cookieStore.set('fm_session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
+    await setSessionCookie(hubUser.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -5,7 +5,7 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } fro
 import { useAuthStore } from '@/stores/auth.store';
 import { LoadingSpinner } from '@/components/shared';
 
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+import { MEMBROS_URL } from '@/lib/config';
 
 export function AccessGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, hasActiveSubscription, isLoading } = useAuthStore();

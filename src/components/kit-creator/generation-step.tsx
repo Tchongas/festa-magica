@@ -6,6 +6,7 @@ import { ErrorMessage } from "@/components/shared";
 import { KitGallery } from "./kit-gallery";
 import { useKitCreatorStore } from "@/stores/kit-creator.store";
 import { KitItem } from "@/types";
+import { downloadAllFiles } from "@/lib/download";
 
 interface GenerationStepProps {
   onRetry: (item: KitItem) => void;
@@ -60,20 +61,13 @@ export function GenerationStep({ onRetry }: GenerationStepProps) {
           {isAllDone && completedCount > 0 && (
             <Button
               variant="gradient"
-              onClick={() => {
-                kitItems
-                  .filter((i) => i.status === 'completed')
-                  .forEach((i, idx) => {
-                    setTimeout(() => {
-                      const link = document.createElement('a');
-                      link.href = i.imageUrl;
-                      link.download = `${i.type}.png`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }, idx * 200);
-                  });
-              }}
+              onClick={() =>
+                downloadAllFiles(
+                  kitItems
+                    .filter((i) => i.status === 'completed')
+                    .map((i) => ({ imageUrl: i.imageUrl, name: i.type }))
+                )
+              }
               className="w-full sm:w-auto"
             >
               <Download className="w-4 h-4" /> Baixar Todos

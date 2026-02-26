@@ -7,7 +7,7 @@ import { Button, Badge } from '@/components/ui';
 import { useKitCreatorStore } from '@/stores/kit-creator.store';
 import { useAuth } from '@/hooks/use-auth';
 
-const MEMBROS_URL = process.env.NEXT_PUBLIC_HUB_URL || 'https://membros.allanfulcher.com/';
+import { MEMBROS_URL } from '@/lib/config';
 
 export function DashboardHeader() {
   const { step, reset } = useKitCreatorStore();

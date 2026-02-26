@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
-import { createSession, ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { createAnonClient } from '@/lib/supabase/anon-client';
+import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
 
-const DEFAULT_REDIRECT_PATH = '/criar';
-
-function safeRedirectPath(redirectTo?: string): string {
-  if (!redirectTo) return DEFAULT_REDIRECT_PATH;
-  return redirectTo.startsWith('/') ? redirectTo : DEFAULT_REDIRECT_PATH;
-}
+const LOGIN_ERROR_MAP: Record<string, string> = {
+  'email not confirmed': 'Confirme seu email antes de entrar.',
+  'invalid login credentials': 'Email ou senha inválidos. Se sua conta foi criada com Google, clique em "Continuar com Google".',
+};
 
 function mapLoginError(message?: string): string {
   const normalized = (message || '').toLowerCase();
-
-  if (normalized.includes('email not confirmed')) {
-    return 'Confirme seu email antes de entrar.';
+  for (const [key, value] of Object.entries(LOGIN_ERROR_MAP)) {
+    if (normalized.includes(key)) return value;
   }
-
-  if (normalized.includes('invalid login credentials')) {
-    return 'Email ou senha inválidos. Se sua conta foi criada com Google, clique em "Continuar com Google".';
-  }
-
   return 'Email ou senha inválidos';
 }
 
@@ -32,19 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios' }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return NextResponse.json({ error: 'Supabase não configurado' }, { status: 500 });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
+    const supabase = createAnonClient();
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: String(email).trim().toLowerCase(),
@@ -65,16 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sessionToken = await createSession(hubUser.id);
-
-    const cookieStore = await cookies();
-    cookieStore.set('fm_session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
+    await setSessionCookie(hubUser.id);
 
     return NextResponse.json({
       success: true,

@@ -6,7 +6,14 @@ import Link from 'next/link';
 import { LogIn, Loader2, Mail, KeyRound, UserRound } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/components/ui';
 
-const DEFAULT_REDIRECT_PATH = '/criar';
+import { DEFAULT_REDIRECT, MEMBROS_URL } from '@/lib/config';
+
+const ERROR_MESSAGES: Record<string, string> = {
+  auth_failed: 'Falha na autenticação. Tente novamente.',
+  oauth_failed: 'Falha no login com Google. Tente novamente.',
+  no_product: 'Este email não possui o produto Festa Mágica em sua conta.',
+  no_active_access: 'Você possui o produto, mas seu acesso não está ativo no momento.',
+};
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -102,7 +109,7 @@ function EntrarPageContent() {
           email,
           password,
           name: mode === 'register' ? name : undefined,
-          redirect_to: redirectTo || DEFAULT_REDIRECT_PATH,
+          redirect_to: redirectTo || DEFAULT_REDIRECT,
         }),
       });
 
@@ -119,7 +126,7 @@ function EntrarPageContent() {
         return;
       }
 
-      window.location.href = data.redirect_to || DEFAULT_REDIRECT_PATH;
+      window.location.href = data.redirect_to || DEFAULT_REDIRECT;
     } catch {
       setEmailError('Erro ao autenticar com email. Tente novamente.');
     } finally {
@@ -127,18 +134,9 @@ function EntrarPageContent() {
     }
   };
 
-  const topError =
-    error === 'auth_failed'
-      ? 'Falha na autenticação. Tente novamente.'
-      : error === 'oauth_failed'
-        ? 'Falha no login com Google. Tente novamente.'
-        : error === 'no_product'
-          ? 'Este email não possui o produto Festa Mágica em sua conta.'
-          : error === 'no_active_access'
-            ? 'Você possui o produto, mas seu acesso não está ativo no momento.'
-            : error
-              ? 'Erro ao fazer login. Tente novamente.'
-              : null;
+  const topError = error
+    ? (ERROR_MESSAGES[error] || 'Erro ao fazer login. Tente novamente.')
+    : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center p-6">
