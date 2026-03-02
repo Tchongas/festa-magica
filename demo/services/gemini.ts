@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { KitItemType, IllustrationStyle } from '../types';
 
@@ -46,7 +47,7 @@ export async function describeTheme(themeBase64: string): Promise<string> {
       {
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: themeBase64 } },
-          { text: "Analise o tema e a atmosfera desta imagem. Descreva as cores principais, elementos decorativos e o clima geral para um kit de festa infantil original. Retorne apenas uma descrição curta em português." }
+          { text: "Analise o tema e a atmosfera desta imagem. IMPORTANTE: Se houver personagens ou marcas protegidas por direitos autorais (Disney, super-heróis, etc), NÃO cite nomes próprios. Em vez disso, descreva os elementos visuais originais: paleta de cores, padrões, objetos da natureza ou formas que definem o clima. Retorne apenas uma descrição criativa e genérica em português que capture a essência sem citar marcas." }
         ]
       }
     ],
@@ -128,7 +129,6 @@ Mantenha consistência facial absoluta com a foto de referência enviada. Fundo 
   });
 
   const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-
   if (part?.inlineData?.data) {
     return `data:image/png;base64,${part.inlineData.data}`;
   }

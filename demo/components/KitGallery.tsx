@@ -1,14 +1,15 @@
 
 import React from 'react';
 import { KitItem, KitItemType } from '../types';
-import { Download, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Download, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 
 interface KitGalleryProps {
   items: KitItem[];
   onRetry: (item: KitItem) => void;
+  onGenerate: (item: KitItem) => void;
 }
 
-const KitGallery: React.FC<KitGalleryProps> = ({ items, onRetry }) => {
+const KitGallery: React.FC<KitGalleryProps> = ({ items, onRetry, onGenerate }) => {
   const handleDownload = (imageUrl: string, filename: string) => {
     const link = document.createElement('a');
     link.href = imageUrl;
@@ -46,6 +47,17 @@ const KitGallery: React.FC<KitGalleryProps> = ({ items, onRetry }) => {
               </div>
             )}
 
+            {item.status === 'pending' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 z-10 p-4 text-center group">
+                <button 
+                  onClick={() => onGenerate(item)}
+                  className="flex items-center gap-2 px-6 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-all font-bold shadow-lg shadow-pink-200 hover:scale-105 active:scale-95"
+                >
+                  <Sparkles className="w-5 h-5" /> Gerar Ilustração
+                </button>
+              </div>
+            )}
+
             {item.imageUrl ? (
               <img 
                 src={item.imageUrl} 
@@ -53,7 +65,7 @@ const KitGallery: React.FC<KitGalleryProps> = ({ items, onRetry }) => {
                 className="w-full h-full object-contain"
               />
             ) : (
-              item.status !== 'error' && <ImageIcon className="w-16 h-16 text-pink-200" />
+              item.status !== 'error' && item.status !== 'pending' && <ImageIcon className="w-16 h-16 text-pink-200" />
             )}
           </div>
           

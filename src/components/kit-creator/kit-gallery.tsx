@@ -17,13 +17,13 @@ export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
       {items.map((item) => (
         <div
           key={item.id}
-          className="bg-white rounded-3xl overflow-hidden shadow-xl border-4 border-white transition-all hover:scale-[1.02]"
+          className="bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-xl border-2 md:border-4 border-white transition-all hover:scale-[1.02]"
         >
           <div className="aspect-square relative bg-pink-50 flex items-center justify-center">
             {item.status === 'generating' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
-                <Loader2 className="w-12 h-12 text-pink-500 animate-spin mb-2" />
-                <p className="text-pink-600 font-medium animate-pulse">Criando arte...</p>
+                <Loader2 className="w-10 h-10 md:w-12 md:h-12 text-pink-500 animate-spin mb-2" />
+                <p className="text-pink-600 font-medium animate-pulse text-sm md:text-base">Criando arte...</p>
               </div>
             )}
 
@@ -51,7 +51,7 @@ export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
             )}
           </div>
 
-          <div className="p-3 md:p-4 flex items-center justify-between bg-white">
+          <div className="p-3 md:p-4 bg-white">
             <div className="min-w-0 flex-1">
               <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight truncate">{item.type}</h3>
               <div className="flex items-center gap-1 mt-1">
@@ -71,10 +71,20 @@ export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
               {item.status === 'pending' && (
                 <button
                   onClick={() => onGenerate(item)}
-                  className="mt-3 w-full px-4 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 text-sm md:text-base font-bold shadow-md shadow-pink-200"
+                  className="mt-3 w-full px-4 py-3.5 md:py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 text-sm md:text-base font-extrabold shadow-md shadow-pink-200"
                   title="Gerar este item"
                 >
                   <Sparkles className="w-4 h-4" /> Gerar este item
+                </button>
+              )}
+
+              {item.status === 'completed' && (
+                <button
+                  onClick={() => downloadFile(item.imageUrl, `${item.type}.png`)}
+                  className="mt-3 w-full sm:hidden px-4 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-500 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm font-bold"
+                  title="Download"
+                >
+                  <Download className="w-4 h-4" /> Baixar item
                 </button>
               )}
             </div>
@@ -82,7 +92,7 @@ export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
             {item.status === 'completed' && (
               <button
                 onClick={() => downloadFile(item.imageUrl, `${item.type}.png`)}
-                className="p-2 md:p-3 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-500 hover:text-white transition-colors flex-shrink-0 ml-2"
+                className="hidden sm:flex p-2 md:p-3 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-500 hover:text-white transition-colors flex-shrink-0 ml-2"
                 title="Download"
               >
                 <Download className="w-4 h-4 md:w-5 md:h-5" />

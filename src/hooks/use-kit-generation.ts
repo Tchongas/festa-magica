@@ -20,6 +20,11 @@ export function useKitGeneration() {
   const { user, hasActiveSubscription } = useAuthStore();
   const descriptionsCache = useRef<{ child: string; theme: string } | null>(null);
 
+  const updateCachedDescriptions = useCallback((child: string, theme: string) => {
+    descriptionsCache.current = { child, theme };
+    setDescriptions(child, theme);
+  }, [setDescriptions]);
+
   const ensureCanGenerate = useCallback((): boolean => {
     if (!userInput.childPhoto) {
       setError("A foto da criança é obrigatória!");
@@ -49,15 +54,13 @@ export function useKitGeneration() {
         userInput.themePhotoMimeType || 'image/jpeg'
       );
 
-      const cached = { child: childDesc, theme: themeDesc };
-      descriptionsCache.current = cached;
-      setDescriptions(childDesc, themeDesc);
-      return cached;
+      updateCachedDescriptions(childDesc, themeDesc);
+      return { child: childDesc, theme: themeDesc };
     } catch {
       setError("Ocorreu um erro ao processar os dados. Verifique sua conexão.");
       return null;
     }
-  }, [userInput, setDescriptions, setError]);
+  }, [userInput, updateCachedDescriptions, setError]);
 
   const generateSingleItem = useCallback(async (
     item: KitItem,
@@ -112,12 +115,28 @@ export function useKitGeneration() {
     }
   }, [ensureCanGenerate, ensureDescriptions, generateSingleItem, setLoading, setError]);
 
+  const analyzeInputs = useCallback(async () => {
+    if (!ensureCanGenerate()) return false;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const descriptions = await ensureDescriptions();
+      return !!descriptions;
+    } finally {
+      setLoading(false);
+    }
+  }, [ensureCanGenerate, ensureDescriptions, setLoading, setError]);
+
   const retryItem = useCallback(async (item: KitItem) => {
     await generateItemOnDemand(item);
   }, [generateItemOnDemand]);
 
   return {
     enterGenerationStep,
+    analyzeInputs,
+    updateCachedDescriptions,
     generateItemOnDemand,
     retryItem,
   };

@@ -1,6 +1,7 @@
 "use client";
 
-import { PartyPopper, CheckCircle2, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { PartyPopper, CheckCircle2, Download, Info, Search, Wand2, Loader2, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ErrorMessage } from "@/components/shared";
 import { KitGallery } from "./kit-gallery";
@@ -9,33 +10,64 @@ import { KitItem } from "@/types";
 import { downloadAllFiles } from "@/lib/download";
 
 interface GenerationStepProps {
+  onAnalyze: () => Promise<boolean>;
+  onUpdateDescriptions: (child: string, theme: string) => void;
   onGenerate: (item: KitItem) => void;
   onRetry: (item: KitItem) => void;
 }
 
-export function GenerationStep({ onGenerate, onRetry }: GenerationStepProps) {
-  const { userInput, kitItems, error, reset } = useKitCreatorStore();
+export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, onRetry }: GenerationStepProps) {
+  const { userInput, kitItems, error, reset, childDescription, themeDescription, loading } = useKitCreatorStore();
+  const [draftChildDescription, setDraftChildDescription] = useState('');
+  const [draftThemeDescription, setDraftThemeDescription] = useState('');
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const canConfirm = !!draftChildDescription.trim() && !!draftThemeDescription.trim();
 
   const completedCount = kitItems.filter((i) => i.status === 'completed').length;
   const errorCount = kitItems.filter((i) => i.status === 'error').length;
   const totalCount = kitItems.length;
   const isAllDone = completedCount + errorCount === totalCount;
 
+  useEffect(() => {
+    if (childDescription) {
+      setDraftChildDescription(childDescription);
+    }
+    if (themeDescription) {
+      setDraftThemeDescription(themeDescription);
+    }
+    setIsConfirmed(false);
+  }, [childDescription, themeDescription]);
+
+  const hasDescriptions = !!childDescription && !!themeDescription;
+
+  const handleAnalyze = async () => {
+    const ok = await onAnalyze();
+    if (ok) setIsConfirmed(false);
+  };
+
+  const handleConfirm = () => {
+    if (!canConfirm) return;
+    onUpdateDescriptions(draftChildDescription.trim(), draftThemeDescription.trim());
+    setIsConfirmed(true);
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="text-center mb-6 md:mb-10">
-        <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800">Seu Kit de Festa Mágica</h2>
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700">
+      <div className="text-center mb-4 md:mb-10 px-1">
+        <h2 className="text-2xl md:text-4xl font-extrabold text-gray-800">
+          {isConfirmed ? "Seu Kit de Festa Mágica" : "Confirme os Detalhes"}
+        </h2>
         <p className="text-gray-500 mt-2 md:mt-3 text-base md:text-lg">
           Estilo <span className="font-bold text-pink-500">{userInput.style}</span> • Tom{" "}
           <span className="font-bold text-blue-500">{userInput.tone}</span>
         </p>
-        <div className="mt-4 flex items-center justify-center gap-3">
+        <div className="mt-4 flex items-center justify-center gap-2 md:gap-3 flex-wrap">
           {isAllDone ? (
-            <span className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-4 py-1.5 rounded-full text-sm font-bold">
+            <span className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-bold">
               <CheckCircle2 className="w-4 h-4" /> Kit completo!
             </span>
           ) : (
-            <span className="inline-flex items-center gap-2 bg-pink-50 text-pink-600 px-4 py-1.5 rounded-full text-sm font-bold">
+            <span className="inline-flex items-center gap-2 bg-pink-50 text-pink-600 px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-bold">
               <span className="w-2 h-2 bg-pink-500 rounded-full animate-pulse" />
               {completedCount} de {totalCount} itens prontos
             </span>
@@ -44,9 +76,79 @@ export function GenerationStep({ onGenerate, onRetry }: GenerationStepProps) {
         {error && <ErrorMessage message={error} />}
       </div>
 
-      <KitGallery items={kitItems} onGenerate={onGenerate} onRetry={onRetry} />
+      <div className="bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/70 shadow-inner">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+          <div className="bg-indigo-500 p-2 rounded-lg">
+            <Wand2 className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-800">Análise da IA</h3>
+          {loading && (
+            <span className="sm:ml-auto flex items-center gap-2 text-xs font-bold text-indigo-500 bg-indigo-100 px-3 py-1 rounded-full self-start sm:self-auto">
+              <Loader2 className="w-3 h-3 animate-spin" /> ANALISANDO...
+            </span>
+          )}
+        </div>
 
-      <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[40px] shadow-lg border-2 border-pink-50 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
+        {hasDescriptions ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">A Criança</p>
+              <div className="relative">
+                <textarea
+                  value={draftChildDescription}
+                  onChange={(e) => setDraftChildDescription(e.target.value)}
+                  disabled={isConfirmed}
+                  className="w-full rounded-xl p-3 text-sm text-gray-700 bg-white/80 border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none min-h-[120px]"
+                  rows={4}
+                />
+                {!isConfirmed && <Edit3 className="w-4 h-4 absolute top-3 right-3 text-gray-300" />}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest mb-2">Atmosfera do Tema</p>
+              <div className="relative">
+                <textarea
+                  value={draftThemeDescription}
+                  onChange={(e) => setDraftThemeDescription(e.target.value)}
+                  disabled={isConfirmed}
+                  className="w-full rounded-xl p-3 text-sm text-gray-700 bg-white/80 border border-pink-100 focus:outline-none focus:ring-2 focus:ring-pink-200 resize-none min-h-[120px]"
+                  rows={4}
+                />
+                {!isConfirmed && <Edit3 className="w-4 h-4 absolute top-3 right-3 text-gray-300" />}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <p className="text-sm text-gray-500 mb-4">Faça a análise antes de gerar os itens.</p>
+            <Button variant="gradient" size="lg" onClick={handleAnalyze} disabled={loading} className="w-full sm:w-auto">
+              Analisar Magia <Search className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {hasDescriptions && !isConfirmed && (
+          <div className="mt-5 flex flex-col items-center">
+            <p className="text-xs text-gray-400 mb-3 text-center">
+              <Info className="w-3 h-3 inline mr-1" /> Você pode editar as descrições antes de confirmar.
+            </p>
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button variant="secondary" onClick={handleAnalyze} disabled={loading} className="w-full sm:w-auto">
+                Reanalisar <Search className="w-4 h-4" />
+              </Button>
+              <Button variant="gradient" size="lg" onClick={handleConfirm} disabled={!canConfirm} className="w-full sm:w-auto">
+                Confirmar e Ver Kit <CheckCircle2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isConfirmed && <KitGallery items={kitItems} onGenerate={onGenerate} onRetry={onRetry} />}
+
+      {isConfirmed && (
+        <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[40px] shadow-lg border-2 border-pink-50 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
         <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
           <div className="bg-pink-100 p-2 md:p-3 rounded-xl md:rounded-2xl flex-shrink-0">
             <PartyPopper className="w-5 h-5 md:w-6 md:h-6 text-pink-500" />
@@ -78,7 +180,8 @@ export function GenerationStep({ onGenerate, onRetry }: GenerationStepProps) {
             Criar Outro Kit
           </Button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

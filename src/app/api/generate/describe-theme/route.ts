@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
           parts: [
             { inlineData: { mimeType, data: themeBase64 } },
             {
-              text: "Analise o tema e a atmosfera desta imagem. Descreva as cores principais, elementos decorativos e o clima geral para um kit de festa infantil original. Retorne apenas uma descrição curta em português."
+              text: "Analise o tema e a atmosfera desta imagem. IMPORTANTE: Se houver personagens ou marcas protegidas por direitos autorais (Disney, super-heróis, etc), NÃO cite nomes próprios. Em vez disso, descreva os elementos visuais originais: paleta de cores, padrões, objetos da natureza ou formas que definem o clima. Retorne apenas uma descrição criativa e genérica em português que capture a essência sem citar marcas."
             }
           ]
         }

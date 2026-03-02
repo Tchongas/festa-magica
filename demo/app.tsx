@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Camera, 
   Upload, 
@@ -11,7 +11,13 @@ import {
   Palette,
   Baby,
   Cuboid,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Search,
+  Wand2,
+  Loader2,
+  CheckCircle2,
+  Edit3,
+  Clock
 } from 'lucide-react';
 import { KitItem, KitItemType, UserInput, IllustrationStyle } from './types';
 import { describeChild, describeTheme, generateKitImage, fileToBase64 } from './services/gemini';
@@ -28,6 +34,7 @@ const INITIAL_KIT_ITEMS: KitItem[] = Object.values(KitItemType).map((type, index
 const App: React.FC = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [userInput, setUserInput] = useState<UserInput>({
     childPhoto: null,
     themePhoto: null,
@@ -38,9 +45,10 @@ const App: React.FC = () => {
   });
   const [kitItems, setKitItems] = useState<KitItem[]>(INITIAL_KIT_ITEMS);
   const [error, setError] = useState<string | null>(null);
-
-  // Cache descriptions to avoid re-analyzing images during retries
-  const analysisCache = useRef<{childDesc: string, themeDesc: string} | null>(null);
+  
+  // State for AI Analysis display
+  const [analysis, setAnalysis] = useState<{childDesc: string, themeDesc: string} | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'child' | 'theme') => {
     const file = e.target.files?.[0];
@@ -81,44 +89,50 @@ const App: React.FC = () => {
   };
 
   const handleRetry = async (item: KitItem) => {
-    if (!userInput.childPhoto || !analysisCache.current) return;
-    await generateSingleItem(item, analysisCache.current.childDesc, analysisCache.current.themeDesc);
+    if (!userInput.childPhoto || !analysis) return;
+    await generateSingleItem(item, analysis.childDesc, analysis.themeDesc);
   };
 
-  const startGeneration = async () => {
+  const startAnalysis = async () => {
     if (!userInput.childPhoto) {
       setError("A foto da criança é obrigatória!");
       return;
     }
 
     setLoading(true);
+    setIsAnalyzing(true);
     setError(null);
     setStep(3);
+    setAnalysis(null);
+    setIsConfirmed(false);
 
     try {
-      // Step 1: Analyze inputs
       const childDesc = await describeChild(userInput.childPhoto);
       const themeDesc = userInput.themePhoto 
         ? await describeTheme(userInput.themePhoto) 
-        : "Festa infantil clássica com cores pastéis e balões.";
+        : "Cores suaves e elementos festivos genéricos.";
       
-      analysisCache.current = { childDesc, themeDesc };
-
-      // Step 2: Generate items sequentially
-      const itemsToGenerate = [...INITIAL_KIT_ITEMS];
-      for (const item of itemsToGenerate) {
-        await generateSingleItem(item, childDesc, themeDesc);
-      }
+      setAnalysis({ childDesc, themeDesc });
+      setIsAnalyzing(false);
     } catch (err) {
-      setError("Ocorreu um erro ao processar os dados. Verifique sua conexão.");
+      setError("Ocorreu um erro ao analisar as imagens. Verifique sua conexão.");
+      setIsAnalyzing(false);
+      setStep(2);
     } finally {
       setLoading(false);
     }
   };
 
+  const confirmAndGenerate = async () => {
+    if (!analysis) return;
+    setIsConfirmed(true);
+  };
+
   const reset = () => {
     setStep(1);
     setLoading(false);
+    setIsAnalyzing(false);
+    setIsConfirmed(false);
     setUserInput({
       childPhoto: null,
       themePhoto: null,
@@ -129,7 +143,7 @@ const App: React.FC = () => {
     });
     setKitItems(INITIAL_KIT_ITEMS);
     setError(null);
-    analysisCache.current = null;
+    setAnalysis(null);
   };
 
   return (
@@ -144,7 +158,7 @@ const App: React.FC = () => {
             Festa <span className="text-pink-500">Mágica</span>
           </h1>
         </div>
-        {step > 1 && (
+        {(step > 1 || isConfirmed) && (
           <button 
             onClick={reset}
             className="flex items-center gap-1 text-gray-400 hover:text-pink-500 transition-colors text-sm font-medium"
@@ -370,24 +384,114 @@ const App: React.FC = () => {
                   Voltar
                 </button>
                 <button 
-                  onClick={startGeneration}
+                  onClick={startAnalysis}
                   className="flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full text-lg font-bold shadow-xl shadow-pink-200 hover:scale-105 active:scale-95 transition-all"
                 >
-                  Criar Kit Mágico! <Sparkles className="w-5 h-5" />
+                  Analisar Magia <Search className="w-5 h-5" />
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* STEP 3: Result Gallery */}
+        {/* STEP 3: Result & Confirmation */}
         {step === 3 && (
-          <div className="space-y-8 animate-in fade-in duration-700">
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="text-center mb-10">
-              <h2 className="text-4xl font-extrabold text-gray-800">Seu Kit de Festa Mágica</h2>
+              <h2 className="text-4xl font-extrabold text-gray-800">
+                {isConfirmed ? "Seu Kit de Festa Mágica" : "Confirme os Detalhes"}
+              </h2>
               <p className="text-gray-500 mt-3 text-lg">
                 Estilo <span className="font-bold text-pink-500">{userInput.style}</span> • Tema <span className="font-bold text-blue-500">{userInput.tone}</span>
               </p>
+              
+              {/* AI ANALYSIS DISPLAY */}
+              <div className="mt-8 max-w-4xl mx-auto">
+                <div className="bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-[32px] p-6 shadow-inner border border-white/50 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Search className="w-20 h-20 text-indigo-500" />
+                  </div>
+                  
+                  <div className="flex items-center gap-3 mb-6 relative">
+                    <div className="bg-indigo-500 p-2 rounded-lg">
+                      <Wand2 className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800">Análise da IA</h3>
+                    {isAnalyzing && (
+                      <span className="flex items-center gap-2 text-xs font-bold text-indigo-500 animate-pulse ml-auto bg-indigo-100 px-3 py-1 rounded-full">
+                        <Loader2 className="w-3 h-3 animate-spin" /> ANALISANDO...
+                      </span>
+                    )}
+                    {!isAnalyzing && !isConfirmed && (
+                      <span className="ml-auto text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full flex items-center gap-1">
+                         Revisão Necessária
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left relative">
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+                        <Baby className="w-3 h-3" /> A Criança
+                      </span>
+                      {analysis ? (
+                        <div className="relative group/edit">
+                          <textarea
+                            disabled={isConfirmed}
+                            value={analysis.childDesc}
+                            onChange={(e) => setAnalysis({...analysis, childDesc: e.target.value})}
+                            className="w-full bg-transparent border-none focus:ring-2 focus:ring-indigo-200 rounded-lg p-2 text-gray-700 leading-relaxed font-medium resize-none transition-all"
+                            rows={3}
+                          />
+                          {!isConfirmed && <Edit3 className="w-4 h-4 absolute top-2 right-2 text-gray-300 pointer-events-none" />}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-100 rounded-full w-full animate-pulse"></div>
+                          <div className="h-4 bg-gray-100 rounded-full w-3/4 animate-pulse"></div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-bold text-pink-400 uppercase tracking-widest flex items-center gap-1">
+                        <Palette className="w-3 h-3" /> Atmosfera do Tema
+                      </span>
+                      {analysis ? (
+                        <div className="relative group/edit">
+                          <textarea
+                            disabled={isConfirmed}
+                            value={analysis.themeDesc}
+                            onChange={(e) => setAnalysis({...analysis, themeDesc: e.target.value})}
+                            className="w-full bg-transparent border-none focus:ring-2 focus:ring-pink-200 rounded-lg p-2 text-gray-700 leading-relaxed font-medium resize-none transition-all"
+                            rows={3}
+                          />
+                          {!isConfirmed && <Edit3 className="w-4 h-4 absolute top-2 right-2 text-gray-300 pointer-events-none" />}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-100 rounded-full w-full animate-pulse"></div>
+                          <div className="h-4 bg-gray-100 rounded-full w-5/6 animate-pulse"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {!isConfirmed && analysis && !isAnalyzing && (
+                    <div className="mt-8 flex flex-col items-center animate-in zoom-in duration-500">
+                      <p className="text-xs text-gray-400 mb-4 text-center">
+                        <Info className="w-3 h-3 inline mr-1" /> Você pode editar as descrições acima para ajustar o resultado.
+                      </p>
+                      <button
+                        onClick={confirmAndGenerate}
+                        className="flex items-center gap-3 px-12 py-5 bg-indigo-600 text-white rounded-full text-lg font-bold shadow-xl shadow-indigo-100 hover:scale-105 active:scale-95 transition-all"
+                      >
+                        Confirmar e Ver Kit <CheckCircle2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {error && (
                 <div className="mt-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl max-w-md mx-auto flex items-center gap-3">
                   <Info className="w-5 h-5" />
@@ -396,25 +500,33 @@ const App: React.FC = () => {
               )}
             </div>
 
-            <KitGallery items={kitItems} onRetry={handleRetry} />
+            {isConfirmed && (
+              <KitGallery 
+                items={kitItems} 
+                onRetry={handleRetry} 
+                onGenerate={(item) => analysis && generateSingleItem(item, analysis.childDesc, analysis.themeDesc)} 
+              />
+            )}
 
-            <div className="bg-white p-8 rounded-[40px] shadow-lg border-2 border-pink-50 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-pink-100 p-3 rounded-2xl">
-                  <PartyPopper className="w-6 h-6 text-pink-500" />
+            {isConfirmed && kitItems.every(item => item.status === 'completed') && (
+              <div className="bg-white p-8 rounded-[40px] shadow-lg border-2 border-pink-50 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="bg-pink-100 p-3 rounded-2xl">
+                    <PartyPopper className="w-6 h-6 text-pink-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Tudo Pronto!</h4>
+                    <p className="text-sm text-gray-500">Salve suas imagens e crie uma festa inesquecível.</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-800">Dica Mágica:</h4>
-                  <p className="text-sm text-gray-500">Para melhores resultados, use papel fotográfico fosco acima de 180g.</p>
-                </div>
+                <button 
+                  onClick={reset}
+                  className="px-10 py-4 bg-gray-100 text-gray-600 rounded-full font-bold hover:bg-gray-200 transition-all active:scale-95"
+                >
+                  Criar Outro Kit
+                </button>
               </div>
-              <button 
-                onClick={reset}
-                className="px-10 py-4 bg-gray-100 text-gray-600 rounded-full font-bold hover:bg-gray-200 transition-all active:scale-95"
-              >
-                Criar Outro Kit
-              </button>
-            </div>
+            )}
           </div>
         )}
       </main>
@@ -425,7 +537,7 @@ const App: React.FC = () => {
           <p className="text-gray-400 text-sm font-medium mb-4">© 2024 Festa Mágica - Tecnologia e Magia</p>
           <div className="text-center">
             <p className="text-gray-400 leading-relaxed font-normal" style={{ fontSize: '11px', maxWidth: '800px' }}>
-              Informações Importantes: Para garantir a segurança de menores, a IA possui filtros rigorosos e pode recusar fotos que não cumpram nossos protocolos de proteção; se ocorrer, tente outra imagem. Além disso, devido à alta demanda nos servidores, os limites diários podem variar. Caso atinja o limite, você pode alternar para outra conta Google para continuar suas gerações.
+              Segurança e Direitos Autorais: Nossa IA analisa temas de forma genérica para respeitar a propriedade intelectual. Gere cada item individualmente para criar seu kit personalizado.
             </p>
           </div>
         </div>

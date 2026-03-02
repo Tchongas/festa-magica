@@ -9,7 +9,13 @@ import { GenerationStep } from "./generation-step";
 
 export function KitCreatorWizard() {
   const { step } = useKitCreatorStore();
-  const { enterGenerationStep, generateItemOnDemand, retryItem } = useKitGeneration();
+  const {
+    enterGenerationStep,
+    analyzeInputs,
+    updateCachedDescriptions,
+    generateItemOnDemand,
+    retryItem,
+  } = useKitGeneration();
 
   return (
     <div>
@@ -17,7 +23,14 @@ export function KitCreatorWizard() {
 
       {step === 1 && <ChildUploadStep />}
       {step === 2 && <ThemeStyleStep onGenerate={enterGenerationStep} />}
-      {step === 3 && <GenerationStep onGenerate={generateItemOnDemand} onRetry={retryItem} />}
+      {step === 3 && (
+        <GenerationStep
+          onAnalyze={analyzeInputs}
+          onUpdateDescriptions={updateCachedDescriptions}
+          onGenerate={generateItemOnDemand}
+          onRetry={retryItem}
+        />
+      )}
     </div>
   );
 }
