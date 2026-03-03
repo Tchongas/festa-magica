@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
+import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 const LOGIN_ERROR_MAP: Record<string, string> = {
   'email not confirmed': 'Confirme seu email antes de entrar.',
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     const hubUser = await ensureHubUserForAuthUser(data.user);
     const subscription = await getActiveUserProduct(hubUser.id);
 
-    if (!subscription) {
+    if (!subscription && !CREDITS_FEATURE_ENABLED) {
       return NextResponse.json(
         { error: 'Sua conta não possui acesso ativo ao Festa Mágica.' },
         { status: 403 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { setSessionCookie } from '@/lib/auth/helpers';
+import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     const hubUser = await ensureHubUserForAuthUser(data.user);
 
     const subscription = await getActiveUserProduct(hubUser.id);
-    if (!subscription) {
+    if (!subscription && !CREDITS_FEATURE_ENABLED) {
       return NextResponse.json({ error: 'Sem assinatura ativa' }, { status: 403 });
     }
 

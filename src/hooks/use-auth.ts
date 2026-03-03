@@ -10,6 +10,9 @@ export function useAuth() {
     isLoading, 
     isAuthenticated, 
     hasActiveSubscription,
+    creditsEnabled,
+    creditsBalance,
+    creditsRequiredForGeneration,
     logout: storeLogout 
   } = useAuthStore();
 
@@ -29,6 +32,9 @@ export function useAuth() {
     isLoading,
     isAuthenticated,
     hasActiveSubscription,
+    creditsEnabled,
+    creditsBalance,
+    creditsRequiredForGeneration,
     logout,
   };
 }

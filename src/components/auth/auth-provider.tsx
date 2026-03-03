@@ -15,7 +15,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     hasVerified.current = true;
 
     async function verifySession() {
-      const { setUser, setSubscription, setLoading } = useAuthStore.getState();
+      const { setUser, setSubscription, setCredits, setLoading } = useAuthStore.getState();
       
       try {
         const response = await fetch('/api/auth/verify');
@@ -24,14 +24,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (data.authenticated) {
           setUser(data.user);
           setSubscription(data.subscription);
+          setCredits({
+            enabled: !!data.credits?.enabled,
+            balance: typeof data.credits?.balance === 'number' ? data.credits.balance : null,
+            requiredForGeneration: !!data.credits?.requiredForGeneration,
+          });
         } else {
           setUser(null);
           setSubscription(null);
+          setCredits({ enabled: false, balance: null, requiredForGeneration: false });
         }
       } catch (error) {
         console.error('Session verification failed:', error);
         setUser(null);
         setSubscription(null);
+        setCredits({ enabled: false, balance: null, requiredForGeneration: false });
       } finally {
         setLoading(false);
       }

@@ -10,7 +10,8 @@ import { MEMBROS_URL } from '@/lib/config';
 
 export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated, hasActiveSubscription } = useAuthStore();
+  const { isAuthenticated, hasActiveSubscription, creditsEnabled } = useAuthStore();
+  const canCreate = isAuthenticated && (hasActiveSubscription || creditsEnabled);
 
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm py-4 px-6 sticky top-0 z-50">
@@ -31,7 +32,7 @@ export function LandingHeader() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          {isAuthenticated && hasActiveSubscription ? (
+          {canCreate ? (
             <Link href="/criar">
               <Button>Criar Kit</Button>
             </Link>
@@ -73,7 +74,7 @@ export function LandingHeader() {
             Como Funciona
           </a>
           <hr />
-          {isAuthenticated && hasActiveSubscription ? (
+          {canCreate ? (
             <Link href="/criar" onClick={() => setMobileMenuOpen(false)}>
               <Button className="w-full">Criar Kit</Button>
             </Link>

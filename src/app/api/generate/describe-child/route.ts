@@ -10,7 +10,7 @@ const schema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { authenticated } = await verifySession();
+    const { authenticated } = await verifySession({ requireSubscription: false });
     if (!authenticated) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

@@ -23,4 +23,7 @@ export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasActiveSubscription: boolean;
+  creditsEnabled: boolean;
+  creditsBalance: number | null;
+  creditsRequiredForGeneration: boolean;
 }

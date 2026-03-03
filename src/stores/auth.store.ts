@@ -7,8 +7,13 @@ interface AuthStoreState {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasActiveSubscription: boolean;
+  creditsEnabled: boolean;
+  creditsBalance: number | null;
+  creditsRequiredForGeneration: boolean;
   setUser: (user: User | null) => void;
   setSubscription: (subscription: UserProduct | null) => void;
+  setCredits: (payload: { enabled: boolean; balance: number | null; requiredForGeneration: boolean }) => void;
+  setCreditsBalance: (balance: number) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
 }
@@ -19,6 +24,9 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   isLoading: true,
   isAuthenticated: false,
   hasActiveSubscription: false,
+  creditsEnabled: false,
+  creditsBalance: null,
+  creditsRequiredForGeneration: false,
 
   setUser: (user) => set({
     user,
@@ -31,6 +39,16 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     hasActiveSubscription: subscription?.status === 'active',
   }),
 
+  setCredits: ({ enabled, balance, requiredForGeneration }) => set({
+    creditsEnabled: enabled,
+    creditsBalance: balance,
+    creditsRequiredForGeneration: requiredForGeneration,
+  }),
+
+  setCreditsBalance: (balance) => set((state) => ({
+    creditsBalance: state.creditsEnabled ? Math.max(0, balance) : state.creditsBalance,
+  })),
+
   setLoading: (isLoading) => set({ isLoading }),
 
   logout: () => set({
@@ -38,5 +56,8 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     subscription: null,
     isAuthenticated: false,
     hasActiveSubscription: false,
+    creditsEnabled: false,
+    creditsBalance: null,
+    creditsRequiredForGeneration: false,
   }),
 }));

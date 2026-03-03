@@ -6,6 +6,7 @@ import {
 } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
+import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 const ALREADY_EXISTS_MSG =
   'Este email já está em uso. Se sua conta foi criada com Google, clique em "Continuar com Google".';
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
 
       if (data.session) {
         const subscription = await getActiveUserProduct(hubUser.id);
-        if (!subscription) {
+        if (!subscription && !CREDITS_FEATURE_ENABLED) {
           return NextResponse.json(
             { error: 'Sua conta não possui acesso ativo ao Festa Mágica.' },
             { status: 403 }

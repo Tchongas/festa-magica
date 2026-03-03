@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PartyPopper, CheckCircle2, Download, Info, Search, Wand2, Loader2, Edit3 } from "lucide-react";
+import { PartyPopper, CheckCircle2, Download, Info, Search, Wand2, Loader2, Edit3, Wallet, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ErrorMessage } from "@/components/shared";
 import { KitGallery } from "./kit-gallery";
 import { useKitCreatorStore } from "@/stores/kit-creator.store";
+import { useAuth } from "@/hooks/use-auth";
 import { KitItem } from "@/types";
 import { downloadAllFiles } from "@/lib/download";
+import { MEMBROS_URL } from "@/lib/config";
 
 interface GenerationStepProps {
   onAnalyze: () => Promise<boolean>;
@@ -18,10 +20,13 @@ interface GenerationStepProps {
 
 export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, onRetry }: GenerationStepProps) {
   const { userInput, kitItems, error, reset, childDescription, themeDescription, loading } = useKitCreatorStore();
+  const { hasActiveSubscription, creditsEnabled, creditsBalance, creditsRequiredForGeneration } = useAuth();
   const [draftChildDescription, setDraftChildDescription] = useState('');
   const [draftThemeDescription, setDraftThemeDescription] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const canConfirm = !!draftChildDescription.trim() && !!draftThemeDescription.trim();
+  const hasNoCredits = creditsEnabled && creditsRequiredForGeneration && (creditsBalance ?? 0) <= 0;
 
   const completedCount = kitItems.filter((i) => i.status === 'completed').length;
   const errorCount = kitItems.filter((i) => i.status === 'error').length;
@@ -41,9 +46,20 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
   const hasDescriptions = !!childDescription && !!themeDescription;
 
   const handleAnalyze = async () => {
+    if (hasNoCredits) {
+      setShowNoCreditsModal(true);
+      return;
+    }
+
     const ok = await onAnalyze();
     if (ok) setIsConfirmed(false);
   };
+
+  useEffect(() => {
+    if (error?.toLowerCase().includes('créditos insuficientes')) {
+      setShowNoCreditsModal(true);
+    }
+  }, [error]);
 
   const handleConfirm = () => {
     if (!canConfirm) return;
@@ -75,6 +91,30 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
         </div>
         {error && <ErrorMessage message={error} />}
       </div>
+
+      {creditsEnabled && (
+        <div className="bg-pink-50 border border-pink-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="bg-pink-500 p-2 rounded-xl w-fit">
+            <Wallet className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs uppercase tracking-wide text-pink-400 font-bold">Créditos disponíveis</p>
+            <p className="text-lg font-extrabold text-pink-600">
+              {typeof creditsBalance === 'number' ? `${creditsBalance} créditos` : 'Indisponível'}
+            </p>
+            {!hasActiveSubscription && creditsRequiredForGeneration && (
+              <p className="text-xs text-pink-500 mt-1">Cada geração consome créditos.</p>
+            )}
+          </div>
+          {hasNoCredits && (
+            <a href={MEMBROS_URL} className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto" variant="gradient">
+                Comprar créditos
+              </Button>
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/70 shadow-inner">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
@@ -145,7 +185,18 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
         )}
       </div>
 
-      {isConfirmed && <KitGallery items={kitItems} onGenerate={onGenerate} onRetry={onRetry} />}
+      {isConfirmed && (
+        <KitGallery
+          items={kitItems}
+          onGenerate={onGenerate}
+          onRetry={onRetry}
+          creditsRequiredForGeneration={creditsRequiredForGeneration}
+          creditsBalance={creditsBalance}
+          onBuyCredits={() => {
+            window.location.href = MEMBROS_URL;
+          }}
+        />
+      )}
 
       {isConfirmed && (
         <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[40px] shadow-lg border-2 border-pink-50 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
@@ -180,6 +231,43 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
             Criar Outro Kit
           </Button>
         </div>
+        </div>
+      )}
+
+      {showNoCreditsModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-red-100 p-6 relative">
+            <button
+              onClick={() => setShowNoCreditsModal(false)}
+              className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"
+              aria-label="Fechar"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+
+            <div className="bg-red-100 text-red-600 p-3 rounded-2xl w-fit mb-4">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <h4 className="text-xl font-extrabold text-gray-800 mb-2">Créditos insuficientes</h4>
+            <p className="text-sm text-gray-600 mb-4">
+              Você não possui saldo suficiente para gerar novos itens agora.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              Saldo atual: <span className="font-bold text-pink-600">{Math.max(0, creditsBalance ?? 0)} créditos</span>
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="secondary" className="w-full" onClick={() => setShowNoCreditsModal(false)}>
+                Fechar
+              </Button>
+              <a href={MEMBROS_URL} className="w-full">
+                <Button variant="gradient" className="w-full">
+                  Comprar créditos
+                </Button>
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>

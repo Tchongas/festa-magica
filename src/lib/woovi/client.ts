@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from 'crypto';
+
 const WOOVI_API_KEY = process.env.WOOVI_API_KEY;
 const WOOVI_API_URL = 'https://api.woovi.com/api/v1';
 
@@ -73,5 +75,15 @@ export async function getChargeStatus(correlationID: string): Promise<WooviCharg
 }
 
 export function verifyWebhookSignature(payload: string, signature: string): boolean {
-  return true;
+  const secret = process.env.WOOVI_WEBHOOK_SECRET;
+  if (!secret || !signature) return false;
+
+  const expectedHex = createHmac('sha256', secret).update(payload).digest('hex');
+  const normalizedReceived = signature.trim().replace(/^sha256=/i, '').toLowerCase();
+
+  const expectedBuffer = Buffer.from(expectedHex);
+  const receivedBuffer = Buffer.from(normalizedReceived);
+  if (expectedBuffer.length !== receivedBuffer.length) return false;
+
+  return timingSafeEqual(expectedBuffer, receivedBuffer);
 }

@@ -2,7 +2,19 @@ import { cookies } from 'next/headers';
 import { getSessionUser } from '@/lib/supabase/db';
 import { SESSION_COOKIE_NAME } from '@/lib/config';
 
-export async function verifySession(): Promise<{ authenticated: boolean; userId?: string }> {
+interface VerifySessionOptions {
+  requireSubscription?: boolean;
+}
+
+interface VerifySessionResult {
+  authenticated: boolean;
+  userId?: string;
+  hasActiveSubscription?: boolean;
+}
+
+export async function verifySession(options: VerifySessionOptions = {}): Promise<VerifySessionResult> {
+  const { requireSubscription = true } = options;
+
   try {
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
@@ -13,11 +25,20 @@ export async function verifySession(): Promise<{ authenticated: boolean; userId?
 
     const result = await getSessionUser(sessionToken);
 
-    if (!result || !result.subscription) {
+    if (!result) {
       return { authenticated: false };
     }
 
-    return { authenticated: true, userId: result.user.id };
+    const hasActiveSubscription = !!result.subscription;
+    if (requireSubscription && !hasActiveSubscription) {
+      return { authenticated: false, userId: result.user.id, hasActiveSubscription };
+    }
+
+    return {
+      authenticated: true,
+      userId: result.user.id,
+      hasActiveSubscription,
+    };
   } catch (error) {
     console.error('Session verification error:', error);
     return { authenticated: false };

@@ -7,7 +7,8 @@ import { MEMBROS_URL } from '@/lib/config';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function CTASection() {
-  const { isAuthenticated, hasActiveSubscription } = useAuthStore();
+  const { isAuthenticated, hasActiveSubscription, creditsEnabled } = useAuthStore();
+  const canCreate = isAuthenticated && (hasActiveSubscription || creditsEnabled);
 
   return (
     <section className="py-20 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500">
@@ -23,7 +24,7 @@ export function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          {isAuthenticated && hasActiveSubscription ? (
+          {canCreate ? (
             <Link href="/criar">
               <Button
                 size="lg"

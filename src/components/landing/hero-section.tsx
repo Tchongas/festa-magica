@@ -7,7 +7,8 @@ import { MEMBROS_URL } from '@/lib/config';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function HeroSection() {
-  const { isAuthenticated, hasActiveSubscription } = useAuthStore();
+  const { isAuthenticated, hasActiveSubscription, creditsEnabled } = useAuthStore();
+  const canCreate = isAuthenticated && (hasActiveSubscription || creditsEnabled);
 
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
@@ -34,7 +35,7 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {isAuthenticated && hasActiveSubscription ? (
+          {canCreate ? (
             <Link href="/criar">
               <Button variant="gradient" size="lg" className="text-lg px-8">
                 Criar Kit

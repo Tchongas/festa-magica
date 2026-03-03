@@ -3,6 +3,13 @@ import { z } from 'zod';
 import { getGeminiClient } from '@/lib/gemini/client';
 import { KitItemType } from '@/types';
 import { verifySession } from '@/lib/auth/verify-session';
+import { resolveCreditsPolicy } from '@/lib/credits/policy';
+import {
+  markGenerationFailedAndRefund,
+  markGenerationSucceeded,
+  reserveCreditsForGeneration,
+} from '@/lib/credits/service';
+import { CREDITS_COST_PER_IMAGE, CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 const schema = z.object({
   type: z.nativeEnum(KitItemType),
@@ -50,10 +57,21 @@ function getAspectRatio(type: KitItemType): string {
 }
 
 export async function POST(request: NextRequest) {
+  let creditsAttemptId: string | null = null;
+
   try {
-    const { authenticated } = await verifySession();
-    if (!authenticated) {
+    const { authenticated, userId, hasActiveSubscription } = await verifySession({
+      requireSubscription: !CREDITS_FEATURE_ENABLED,
+    });
+
+    if (!authenticated || !userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const policy = resolveCreditsPolicy({ hasActiveSubscription: !!hasActiveSubscription });
+
+    if (!hasActiveSubscription && !policy.allowWithoutSubscription) {
+      return NextResponse.json({ error: 'Acesso ativo necessário' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -75,6 +93,53 @@ export async function POST(request: NextRequest) {
       tone,
       style,
     } = parsed.data;
+
+    const idempotencyKey = request.headers.get('x-idempotency-key')?.trim() || '';
+    let creditsBalance: number | null = null;
+
+    if (policy.requiresCredits) {
+      if (!idempotencyKey) {
+        return NextResponse.json(
+          { error: 'Idempotency key obrigatória', code: 'missing_idempotency_key' },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const reserve = await reserveCreditsForGeneration({
+          userId,
+          kitItemType: type,
+          cost: CREDITS_COST_PER_IMAGE,
+          idempotencyKey,
+        });
+
+        creditsAttemptId = reserve.attemptId;
+        creditsBalance = reserve.newBalance;
+      } catch (reserveError) {
+        if ((reserveError as Error).message === 'insufficient_credits') {
+          return NextResponse.json(
+            {
+              error: 'Você não possui créditos suficientes para gerar este item.',
+              code: 'insufficient_credits',
+              details: {
+                required: CREDITS_COST_PER_IMAGE,
+                balance: 0,
+              },
+            },
+            { status: 402 }
+          );
+        }
+
+        if ((reserveError as Error).message === 'invalid_idempotency') {
+          return NextResponse.json(
+            { error: 'Idempotency key inválida', code: 'invalid_idempotency' },
+            { status: 400 }
+          );
+        }
+
+        throw reserveError;
+      }
+    }
 
     const ai = getGeminiClient();
 
@@ -110,11 +175,34 @@ Mantenha consistência facial absoluta com a foto de referência enviada. Fundo 
     const part = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
     if (part?.inlineData?.data) {
       const imageUrl = `data:image/png;base64,${part.inlineData.data}`;
-      return NextResponse.json({ imageUrl });
+
+      if (creditsAttemptId) {
+        try {
+          await markGenerationSucceeded(creditsAttemptId);
+        } catch (markError) {
+          console.error('Error marking generation success:', markError);
+        }
+      }
+
+      return NextResponse.json({
+        imageUrl,
+        credits: {
+          charged: policy.requiresCredits,
+          balance: creditsBalance,
+        },
+      });
     }
 
     throw new Error("Falha ao gerar imagem.");
   } catch (error) {
+    if (creditsAttemptId) {
+      try {
+        await markGenerationFailedAndRefund(creditsAttemptId, 'model_generation_failed');
+      } catch (refundError) {
+        console.error('Error refunding credits after generation failure:', refundError);
+      }
+    }
+
     console.error('Error generating kit image:', error);
     return NextResponse.json(
       { error: 'Erro ao gerar imagem do kit' },

@@ -8,7 +8,8 @@ import { LoadingSpinner } from '@/components/shared';
 import { MEMBROS_URL } from '@/lib/config';
 
 export function AccessGate({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, hasActiveSubscription, isLoading } = useAuthStore();
+  const { isAuthenticated, hasActiveSubscription, creditsEnabled, isLoading } = useAuthStore();
+  const hasEntitlement = hasActiveSubscription || creditsEnabled;
 
   if (isLoading) {
     return (
@@ -18,7 +19,7 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthenticated || !hasActiveSubscription) {
+  if (!isAuthenticated || !hasEntitlement) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center p-6">
         <Card className="max-w-md w-full border-pink-100">
@@ -28,7 +29,7 @@ export function AccessGate({ children }: { children: React.ReactNode }) {
             </div>
             <CardTitle className="text-2xl">Acesso Necessário</CardTitle>
             <CardDescription>
-              Você precisa ter acesso ao Festa Mágica para usar esta ferramenta.
+              Você precisa ter assinatura ativa ou créditos para usar esta ferramenta.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -8,9 +8,20 @@ interface KitGalleryProps {
   items: KitItem[];
   onGenerate: (item: KitItem) => void;
   onRetry: (item: KitItem) => void;
+  creditsRequiredForGeneration: boolean;
+  creditsBalance: number | null;
+  onBuyCredits: () => void;
 }
 
-export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
+export function KitGallery({
+  items,
+  onGenerate,
+  onRetry,
+  creditsRequiredForGeneration,
+  creditsBalance,
+  onBuyCredits,
+}: KitGalleryProps) {
+  const hasNoCredits = creditsRequiredForGeneration && (creditsBalance ?? 0) <= 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -71,10 +82,20 @@ export function KitGallery({ items, onGenerate, onRetry }: KitGalleryProps) {
               {item.status === 'pending' && (
                 <button
                   onClick={() => onGenerate(item)}
-                  className="mt-3 w-full px-4 py-3.5 md:py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 text-sm md:text-base font-extrabold shadow-md shadow-pink-200"
+                  disabled={hasNoCredits}
+                  className="mt-3 w-full px-4 py-3.5 md:py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm md:text-base font-extrabold shadow-md shadow-pink-200"
                   title="Gerar este item"
                 >
-                  <Sparkles className="w-4 h-4" /> Gerar este item
+                  <Sparkles className="w-4 h-4" /> {hasNoCredits ? 'Sem créditos disponíveis' : 'Gerar este item'}
+                </button>
+              )}
+
+              {item.status === 'pending' && hasNoCredits && (
+                <button
+                  onClick={onBuyCredits}
+                  className="mt-2 w-full px-4 py-2.5 bg-white text-pink-600 border border-pink-200 rounded-xl hover:bg-pink-50 transition-colors text-xs md:text-sm font-bold"
+                >
+                  Comprar créditos
                 </button>
               )}
 

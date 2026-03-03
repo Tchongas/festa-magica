@@ -12,6 +12,7 @@ import {
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { setSessionCookie, resolveRedirectUrl } from '@/lib/auth/helpers';
 import { MEMBROS_URL } from '@/lib/config';
+import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -46,7 +47,7 @@ async function handleTokenCallback(token: string, origin: string) {
     }
 
     const subscription = await getActiveUserProduct(user.id);
-    if (!subscription) {
+    if (!subscription && !CREDITS_FEATURE_ENABLED) {
       console.error('Token callback: no active subscription for user', { userId: user.id, email: user.email });
       return NextResponse.redirect(`${MEMBROS_URL}?error=no_active_access`);
     }
@@ -85,7 +86,7 @@ async function handleOAuthCallback(code: string, origin: string) {
 
     const hubUser = await ensureHubUserForAuthUser(authUser);
     const subscription = await getActiveUserProduct(hubUser.id);
-    if (!subscription) {
+    if (!subscription && !CREDITS_FEATURE_ENABLED) {
       await supabase.auth.signOut();
       return NextResponse.redirect(`${origin}/entrar?error=no_active_access`);
     }

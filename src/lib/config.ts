@@ -16,3 +16,31 @@ export const SESSION_COOKIE_OPTIONS = {
   maxAge: SESSION_MAX_AGE_SECONDS,
   path: '/',
 };
+
+export type CreditsMode = 'off' | 'hybrid' | 'credits_only';
+
+function envFlag(value: string | undefined, fallback = false): boolean {
+  if (value == null) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+}
+
+function envNumber(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function envCreditsMode(value: string | undefined): CreditsMode {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'hybrid' || normalized === 'credits_only') return normalized;
+  return 'off';
+}
+
+export const CREDITS_MODE: CreditsMode = envCreditsMode(process.env.CREDITS_MODE);
+export const CREDITS_FEATURE_ENABLED = CREDITS_MODE !== 'off';
+export const CREDITS_CHARGE_SUBSCRIBERS = envFlag(process.env.CREDITS_CHARGE_SUBSCRIBERS, false);
+export const CREDITS_COST_PER_IMAGE = envNumber(process.env.CREDITS_COST_PER_IMAGE, 1);
+
+export const CREDITS_ADMIN_EMAILS = String(process.env.CREDITS_ADMIN_EMAILS || '')
+  .split(',')
+  .map((item) => item.trim().toLowerCase())
+  .filter(Boolean);
