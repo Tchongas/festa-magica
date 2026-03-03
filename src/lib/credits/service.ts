@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { CREDITS_STARTER_BALANCE } from '@/lib/config';
 
 interface ReserveCreditsInput {
   userId: string;
@@ -67,6 +68,19 @@ function assertGrantInput(input: GrantCreditsInput): void {
 
 export async function getCreditsBalance(userId: string): Promise<number> {
   const supabase = createServiceRoleClient();
+
+  const { error: ensureError } = await supabase
+    .from('user_credit_wallets')
+    .insert({
+      user_id: userId,
+      balance: CREDITS_STARTER_BALANCE,
+    })
+    .select('user_id')
+    .maybeSingle();
+
+  if (ensureError && ensureError.code !== '23505') {
+    throw new Error(`Failed to initialize credits wallet: ${ensureError.message}`);
+  }
 
   const { data, error } = await supabase
     .from('user_credit_wallets')

@@ -57,6 +57,11 @@ export function useKitGeneration() {
       return false;
     }
 
+    if (creditsEnabled && creditsRequiredForGeneration && creditsBalance == null) {
+      setError('Não foi possível validar seu saldo de créditos agora. Atualize a página e tente novamente.');
+      return false;
+    }
+
     if (creditsEnabled && creditsRequiredForGeneration && (creditsBalance ?? 0) <= 0) {
       setError("Você está sem créditos. Compre mais créditos para continuar gerando.");
       return false;
@@ -140,6 +145,12 @@ export function useKitGeneration() {
         } catch (refreshError) {
           console.error('Failed to refresh credits balance:', refreshError);
         }
+      } else if (err instanceof APIError && err.status === 401) {
+        setError('Sua sessão expirou. Faça login novamente para continuar gerando.');
+      } else if (err instanceof APIError && err.status === 402) {
+        setError('Você está sem créditos para concluir essa geração.');
+      } else {
+        setError('Não foi possível gerar este item agora. Tente novamente em instantes.');
       }
 
       updateKitItem(item.id, { status: 'error' });

@@ -15,7 +15,7 @@ export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const showCredits = creditsEnabled;
-  const creditsText = typeof creditsBalance === 'number' ? `${creditsBalance} créditos` : 'Créditos indisponíveis';
+  const creditsText = `${Math.max(0, creditsBalance ?? 0)} créditos`;
 
   return (
     <header className="bg-white shadow-sm py-3 px-4 md:py-4 md:px-6 mb-6 md:mb-8 sticky top-0 z-50">

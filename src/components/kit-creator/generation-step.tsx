@@ -20,13 +20,14 @@ interface GenerationStepProps {
 
 export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, onRetry }: GenerationStepProps) {
   const { userInput, kitItems, error, reset, childDescription, themeDescription, loading } = useKitCreatorStore();
-  const { hasActiveSubscription, creditsEnabled, creditsBalance, creditsRequiredForGeneration } = useAuth();
+  const { creditsEnabled, creditsBalance, creditsRequiredForGeneration } = useAuth();
   const [draftChildDescription, setDraftChildDescription] = useState('');
   const [draftThemeDescription, setDraftThemeDescription] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const canConfirm = !!draftChildDescription.trim() && !!draftThemeDescription.trim();
   const hasNoCredits = creditsEnabled && creditsRequiredForGeneration && (creditsBalance ?? 0) <= 0;
+  const normalizedCreditsBalance = Math.max(0, creditsBalance ?? 0);
 
   const completedCount = kitItems.filter((i) => i.status === 'completed').length;
   const errorCount = kitItems.filter((i) => i.status === 'error').length;
@@ -56,7 +57,8 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
   };
 
   useEffect(() => {
-    if (error?.toLowerCase().includes('créditos insuficientes')) {
+    const normalizedError = error?.toLowerCase() || '';
+    if (normalizedError.includes('créditos insuficientes') || normalizedError.includes('sem créditos')) {
       setShowNoCreditsModal(true);
     }
   }, [error]);
@@ -100,9 +102,9 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
           <div className="flex-1">
             <p className="text-xs uppercase tracking-wide text-pink-400 font-bold">Créditos disponíveis</p>
             <p className="text-lg font-extrabold text-pink-600">
-              {typeof creditsBalance === 'number' ? `${creditsBalance} créditos` : 'Indisponível'}
+              {normalizedCreditsBalance} créditos
             </p>
-            {!hasActiveSubscription && creditsRequiredForGeneration && (
+            {creditsRequiredForGeneration && (
               <p className="text-xs text-pink-500 mt-1">Cada geração consome créditos.</p>
             )}
           </div>
@@ -162,7 +164,7 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
         ) : (
           <div className="text-center py-6">
             <p className="text-sm text-gray-500 mb-4">Faça a análise antes de gerar os itens.</p>
-            <Button variant="gradient" size="lg" onClick={handleAnalyze} disabled={loading} className="w-full sm:w-auto">
+            <Button variant="gradient" size="lg" onClick={handleAnalyze} disabled={loading || hasNoCredits} className="w-full sm:w-auto">
               Analisar Magia <Search className="w-4 h-4" />
             </Button>
           </div>
@@ -174,7 +176,7 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
               <Info className="w-3 h-3 inline mr-1" /> Você pode editar as descrições antes de confirmar.
             </p>
             <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button variant="secondary" onClick={handleAnalyze} disabled={loading} className="w-full sm:w-auto">
+              <Button variant="secondary" onClick={handleAnalyze} disabled={loading || hasNoCredits} className="w-full sm:w-auto">
                 Reanalisar <Search className="w-4 h-4" />
               </Button>
               <Button variant="gradient" size="lg" onClick={handleConfirm} disabled={!canConfirm} className="w-full sm:w-auto">

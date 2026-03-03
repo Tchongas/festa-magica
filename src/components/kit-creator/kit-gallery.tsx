@@ -44,10 +44,19 @@ export function KitGallery({
                 <p className="text-red-600 font-bold mb-3">Erro na geração</p>
                 <button
                   onClick={() => onRetry(item)}
+                  disabled={hasNoCredits}
                   className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors font-bold text-sm"
                 >
-                  <RefreshCw className="w-4 h-4" /> Tentar Novamente
+                  <RefreshCw className="w-4 h-4" /> {hasNoCredits ? 'Sem créditos para tentar' : 'Tentar Novamente'}
                 </button>
+                {hasNoCredits && (
+                  <button
+                    onClick={onBuyCredits}
+                    className="mt-2 flex items-center gap-2 px-4 py-2 bg-white text-pink-600 border border-pink-200 rounded-full hover:bg-pink-50 transition-colors font-bold text-sm"
+                  >
+                    Comprar créditos
+                  </button>
+                )}
               </div>
             )}
 
