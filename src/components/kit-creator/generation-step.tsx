@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PartyPopper, CheckCircle2, Download, Info, Search, Wand2, Loader2, Edit3, Wallet, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ErrorMessage } from "@/components/shared";
@@ -25,7 +25,8 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
   const [draftThemeDescription, setDraftThemeDescription] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
-  const canConfirm = !!draftChildDescription.trim() && !!draftThemeDescription.trim();
+  const canConfirm = !!(draftChildDescription || childDescription || '').trim()
+    && !!(draftThemeDescription || themeDescription || '').trim();
   const hasNoCredits = creditsEnabled && creditsRequiredForGeneration && (creditsBalance ?? 0) <= 0;
   const normalizedCreditsBalance = Math.max(0, creditsBalance ?? 0);
 
@@ -33,16 +34,6 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
   const errorCount = kitItems.filter((i) => i.status === 'error').length;
   const totalCount = kitItems.length;
   const isAllDone = completedCount + errorCount === totalCount;
-
-  useEffect(() => {
-    if (childDescription) {
-      setDraftChildDescription(childDescription);
-    }
-    if (themeDescription) {
-      setDraftThemeDescription(themeDescription);
-    }
-    setIsConfirmed(false);
-  }, [childDescription, themeDescription]);
 
   const hasDescriptions = !!childDescription && !!themeDescription;
 
@@ -52,20 +43,18 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
       return;
     }
 
+    setDraftChildDescription('');
+    setDraftThemeDescription('');
+
     const ok = await onAnalyze();
     if (ok) setIsConfirmed(false);
   };
 
-  useEffect(() => {
-    const normalizedError = error?.toLowerCase() || '';
-    if (normalizedError.includes('créditos insuficientes') || normalizedError.includes('sem créditos')) {
-      setShowNoCreditsModal(true);
-    }
-  }, [error]);
-
   const handleConfirm = () => {
     if (!canConfirm) return;
-    onUpdateDescriptions(draftChildDescription.trim(), draftThemeDescription.trim());
+    const childDraft = (draftChildDescription || childDescription || '').trim();
+    const themeDraft = (draftThemeDescription || themeDescription || '').trim();
+    onUpdateDescriptions(childDraft, themeDraft);
     setIsConfirmed(true);
   };
 
@@ -137,7 +126,7 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">A Criança</p>
               <div className="relative">
                 <textarea
-                  value={draftChildDescription}
+                  value={draftChildDescription || childDescription || ''}
                   onChange={(e) => setDraftChildDescription(e.target.value)}
                   disabled={isConfirmed}
                   className="w-full rounded-xl p-3 text-sm text-gray-700 bg-white/80 border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 resize-none min-h-[120px]"
@@ -151,7 +140,7 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
               <p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest mb-2">Atmosfera do Tema</p>
               <div className="relative">
                 <textarea
-                  value={draftThemeDescription}
+                  value={draftThemeDescription || themeDescription || ''}
                   onChange={(e) => setDraftThemeDescription(e.target.value)}
                   disabled={isConfirmed}
                   className="w-full rounded-xl p-3 text-sm text-gray-700 bg-white/80 border border-pink-100 focus:outline-none focus:ring-2 focus:ring-pink-200 resize-none min-h-[120px]"

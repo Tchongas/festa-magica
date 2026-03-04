@@ -23,6 +23,21 @@ export interface GrantCreditsResult {
   ledgerId: string;
 }
 
+export interface SetCreditsBalanceInput {
+  userId: string;
+  targetBalance: number;
+  referenceId: string;
+  idempotencyKey: string;
+  meta?: Record<string, unknown>;
+}
+
+export interface SetCreditsBalanceResult {
+  previousBalance: number;
+  newBalance: number;
+  delta: number;
+  ledgerId: string | null;
+}
+
 export interface ReserveCreditsResult {
   attemptId: string;
   newBalance: number;
@@ -55,6 +70,24 @@ function assertGrantInput(input: GrantCreditsInput): void {
 
   if (!Number.isInteger(input.amount) || input.amount <= 0) {
     throw new Error('invalid_amount');
+  }
+
+  if (!input.referenceId?.trim()) {
+    throw new Error('invalid_reference');
+  }
+
+  if (!input.idempotencyKey?.trim()) {
+    throw new Error('invalid_idempotency');
+  }
+}
+
+function assertSetBalanceInput(input: SetCreditsBalanceInput): void {
+  if (!input.userId?.trim()) {
+    throw new Error('invalid_user');
+  }
+
+  if (!Number.isInteger(input.targetBalance) || input.targetBalance < 0) {
+    throw new Error('invalid_target_balance');
   }
 
   if (!input.referenceId?.trim()) {
@@ -219,5 +252,38 @@ export async function grantCredits(input: GrantCreditsInput): Promise<GrantCredi
   return {
     newBalance: Number(row.new_balance || 0),
     ledgerId: String(row.ledger_id),
+  };
+}
+
+export async function setCreditsBalance(input: SetCreditsBalanceInput): Promise<SetCreditsBalanceResult> {
+  assertSetBalanceInput(input);
+  const supabase = createServiceRoleClient();
+
+  const { data, error } = await supabase.rpc('set_wallet_balance_admin', {
+    p_user_id: input.userId,
+    p_target_balance: input.targetBalance,
+    p_reference_id: input.referenceId,
+    p_idempotency_key: input.idempotencyKey,
+    p_meta: input.meta || {},
+  });
+
+  if (error) {
+    const normalizedMessage = String(error.message || '').toLowerCase();
+    if (normalizedMessage.includes('invalid_target_balance')) {
+      throw new Error('invalid_target_balance');
+    }
+    if (normalizedMessage.includes('invalid_idempotency')) {
+      throw new Error('invalid_idempotency');
+    }
+
+    throw new Error(`Failed to set credits balance: ${error.message}`);
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    previousBalance: Number(row?.previous_balance || 0),
+    newBalance: Number(row?.new_balance || 0),
+    delta: Number(row?.delta || 0),
+    ledgerId: row?.ledger_id ? String(row.ledger_id) : null,
   };
 }

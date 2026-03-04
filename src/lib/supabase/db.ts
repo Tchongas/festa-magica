@@ -10,6 +10,11 @@ function getFallbackName(email: string): string {
   return email.includes('@') ? email.split('@')[0] : 'Usuário';
 }
 
+function getMetadataString(metadata: Record<string, unknown> | null | undefined, key: string): string | undefined {
+  const value = metadata?.[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
 export async function getUserByEmail(email: string): Promise<User | null> {
   const supabase = createServiceRoleClient();
   const normalizedEmail = normalizeEmail(email);
@@ -45,7 +50,9 @@ export async function hasFestaMagicaProductByEmail(email: string): Promise<boole
   return true;
 }
 
-export async function ensureHubUserForAuthUser(authUser: { id: string; email?: string | null; user_metadata?: any }): Promise<User> {
+export async function ensureHubUserForAuthUser(
+  authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> | null }
+): Promise<User> {
   const supabase = createServiceRoleClient();
   const normalizedEmail = normalizeEmail(authUser.email);
 
@@ -54,8 +61,8 @@ export async function ensureHubUserForAuthUser(authUser: { id: string; email?: s
   }
 
   const desiredName =
-    authUser.user_metadata?.name ||
-    authUser.user_metadata?.full_name ||
+    getMetadataString(authUser.user_metadata, 'name') ||
+    getMetadataString(authUser.user_metadata, 'full_name') ||
     getFallbackName(normalizedEmail);
 
   const byEmail = await getUserByEmail(normalizedEmail);

@@ -94,6 +94,7 @@ export async function fetchCreditsLedger(limit = 50): Promise<CreditsLedgerEntry
 
 export interface CreditsAdminSessionInfo {
   authorized: boolean;
+  reason?: 'unauthenticated' | 'not_allowlisted' | 'not_google_auth';
   adminUserId?: string;
   adminEmail?: string;
 }
@@ -102,7 +103,8 @@ export async function fetchCreditsAdminSession(): Promise<CreditsAdminSessionInf
   const response = await fetch('/api/credits/grant', { method: 'GET' });
 
   if (response.status === 401) {
-    return { authorized: false };
+    const data = await response.json().catch(() => null);
+    return { authorized: false, reason: data?.reason };
   }
 
   if (!response.ok) {
@@ -118,29 +120,79 @@ export async function fetchCreditsAdminSession(): Promise<CreditsAdminSessionInf
   const data = await response.json();
   return {
     authorized: !!data.authorized,
+    reason: data.reason,
     adminUserId: data.adminUserId,
     adminEmail: data.adminEmail,
   };
 }
 
-export interface AdminGrantInput {
+export interface AdminWalletHistoryEntry extends CreditsLedgerEntry {
+  description: string | null;
+}
+
+export interface AdminWalletView {
+  userId: string;
+  email: string;
+  name: string | null;
+  balance: number;
+  history: AdminWalletHistoryEntry[];
+}
+
+export async function fetchAdminWalletByEmail(email: string): Promise<AdminWalletView> {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const response = await fetch(`/api/credits/grant?email=${encodeURIComponent(normalizedEmail)}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new APIError(
+      data?.error || 'Erro ao carregar carteira de créditos',
+      response.status,
+      data?.code,
+      data?.details
+    );
+  }
+
+  const data = await response.json();
+  const wallet = data.wallet || {};
+  const history = Array.isArray(wallet.history) ? wallet.history : [];
+
+  return {
+    userId: String(wallet.userId || ''),
+    email: String(wallet.email || normalizedEmail),
+    name: wallet.name ? String(wallet.name) : null,
+    balance: Number(wallet.balance || 0),
+    history: history.map((entry: CreditsLedgerEntry) => ({
+      ...entry,
+      description:
+        typeof entry.meta?.description === 'string' && entry.meta.description.trim().length > 0
+          ? entry.meta.description.trim()
+          : null,
+    })),
+  };
+}
+
+export interface UpdateAdminWalletInput {
   userId?: string;
   email?: string;
-  amount: number;
-  reason: 'manual_grant' | 'adjustment';
-  referenceId: string;
+  targetBalance: number;
+  description: string;
+  referenceId?: string;
   idempotencyKey?: string;
-  meta?: Record<string, unknown>;
 }
 
-export interface AdminGrantResult {
+export interface UpdateAdminWalletResult {
   success: boolean;
   userId: string;
-  ledgerId: string;
+  ledgerId: string | null;
+  previousBalance: number;
   newBalance: number;
+  delta: number;
 }
 
-export async function submitAdminCreditsGrant(input: AdminGrantInput): Promise<AdminGrantResult> {
+export async function updateAdminWalletBalance(input: UpdateAdminWalletInput): Promise<UpdateAdminWalletResult> {
   const response = await fetch('/api/credits/grant', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -150,7 +202,7 @@ export async function submitAdminCreditsGrant(input: AdminGrantInput): Promise<A
   if (!response.ok) {
     const data = await response.json().catch(() => null);
     throw new APIError(
-      data?.error || 'Erro ao conceder créditos',
+      data?.error || 'Erro ao atualizar carteira de créditos',
       response.status,
       data?.code,
       data?.details

@@ -172,7 +172,9 @@ Mantenha consistência facial absoluta com a foto de referência enviada. Fundo 
       }
     });
 
-    const part = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+    const part = response.candidates?.[0]?.content?.parts?.find(
+      (p: { inlineData?: { data?: string } }) => !!p.inlineData
+    );
     if (part?.inlineData?.data) {
       const imageUrl = `data:image/png;base64,${part.inlineData.data}`;
 
