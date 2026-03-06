@@ -107,6 +107,20 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
         </div>
       )}
 
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+        <div className="bg-amber-100 text-amber-700 p-2 rounded-xl w-fit">
+          <AlertTriangle className="w-4 h-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wide text-amber-600 font-extrabold">Importante</p>
+          <h4 className="text-sm md:text-base font-extrabold text-amber-900 mt-1">Baixe suas imagens assim que gerar</h4>
+          <p className="text-xs md:text-sm text-amber-800 mt-1 leading-relaxed">
+            No momento, as artes geradas não ficam salvas na plataforma. Para não perder seu conteúdo,
+            baixe cada item (ou use o botão Baixar Todos) logo após finalizar.
+          </p>
+        </div>
+      </div>
+
       <div className="bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/70 shadow-inner">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
           <div className="bg-indigo-500 p-2 rounded-lg">
