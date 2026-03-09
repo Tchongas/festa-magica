@@ -44,7 +44,7 @@ export const CREDITS_MODE: CreditsMode = envCreditsMode(process.env.CREDITS_MODE
 export const CREDITS_FEATURE_ENABLED = CREDITS_MODE !== 'off';
 export const CREDITS_CHARGE_SUBSCRIBERS = envFlag(process.env.CREDITS_CHARGE_SUBSCRIBERS, false);
 export const CREDITS_COST_PER_IMAGE = envNumber(process.env.CREDITS_COST_PER_IMAGE, 1);
-export const CREDITS_STARTER_BALANCE = envNonNegativeNumber(process.env.CREDITS_STARTER_BALANCE, 30);
+export const CREDITS_STARTER_BALANCE = envNonNegativeNumber(process.env.CREDITS_STARTER_BALANCE, 5);
 
 export const CREDITS_ADMIN_EMAILS = String(process.env.CREDITS_ADMIN_EMAILS || '')
   .split(',')
