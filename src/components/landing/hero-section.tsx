@@ -3,7 +3,7 @@
 import { Star, ExternalLink, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui';
 import Link from 'next/link';
-import { MEMBROS_URL } from '@/lib/config';
+import { HOTMART_40_CREDITS_URL, HOTMART_200_CREDITS_URL } from '@/lib/config';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function HeroSection() {
@@ -48,9 +48,14 @@ export function HeroSection() {
                   <LogIn className="w-5 h-5" /> Entrar / Criar conta
                 </Button>
               </Link>
-              <a href={MEMBROS_URL}>
+              <a href={HOTMART_40_CREDITS_URL}>
                 <Button variant="gradient" size="lg" className="text-lg px-8">
-                  Comprar <ExternalLink className="w-5 h-5 ml-2" />
+                  Comprar 40 créditos <ExternalLink className="w-5 h-5 ml-2" />
+                </Button>
+              </a>
+              <a href={HOTMART_200_CREDITS_URL}>
+                <Button variant="outline" size="lg" className="text-lg px-8">
+                  Comprar 200 créditos <ExternalLink className="w-5 h-5 ml-2" />
                 </Button>
               </a>
             </>

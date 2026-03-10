@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { LogIn, Loader2, Mail, KeyRound, UserRound } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/components/ui';
 
-import { DEFAULT_REDIRECT, MEMBROS_URL } from '@/lib/config';
+import { DEFAULT_REDIRECT } from '@/lib/config';
 
 const ERROR_MESSAGES: Record<string, string> = {
   auth_failed: 'Falha na autenticação. Tente novamente.',
@@ -287,7 +287,7 @@ function EntrarPageContent() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            Cadastre somente o email que já comprou o Festa Mágica.
+            A ferramenta é gratuita. Compre créditos para gerar imagens.
           </div>
 
           <div className="mt-4 text-center">

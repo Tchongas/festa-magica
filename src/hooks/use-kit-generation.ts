@@ -53,7 +53,7 @@ export function useKitGeneration() {
     }
 
     if (!hasActiveSubscription && !creditsEnabled) {
-      setError("Você precisa ter uma assinatura ativa para gerar kits.");
+      setError("A geração está indisponível no momento. Tente novamente em instantes.");
       return false;
     }
 

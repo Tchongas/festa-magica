@@ -6,7 +6,7 @@ import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 
-import { MEMBROS_URL } from '@/lib/config';
+import { HOTMART_40_CREDITS_URL, HOTMART_200_CREDITS_URL } from '@/lib/config';
 
 export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,9 +43,14 @@ export function LandingHeader() {
                   <LogIn className="w-4 h-4" /> Entrar / Criar conta
                 </Button>
               </Link>
-              <a href={MEMBROS_URL}>
+              <a href={HOTMART_40_CREDITS_URL}>
                 <Button>
-                  Comprar <ExternalLink className="w-4 h-4 ml-1" />
+                  Comprar 40 créditos <ExternalLink className="w-4 h-4 ml-1" />
+                </Button>
+              </a>
+              <a href={HOTMART_200_CREDITS_URL}>
+                <Button variant="outline">
+                  Comprar 200 créditos <ExternalLink className="w-4 h-4 ml-1" />
                 </Button>
               </a>
             </>
@@ -85,9 +90,14 @@ export function LandingHeader() {
                   <LogIn className="w-4 h-4" /> Entrar / Criar conta
                 </Button>
               </Link>
-              <a href={MEMBROS_URL} onClick={() => setMobileMenuOpen(false)}>
+              <a href={HOTMART_40_CREDITS_URL} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full">
-                  Comprar <ExternalLink className="w-4 h-4 ml-1" />
+                  Comprar 40 créditos <ExternalLink className="w-4 h-4 ml-1" />
+                </Button>
+              </a>
+              <a href={HOTMART_200_CREDITS_URL} onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full" variant="outline">
+                  Comprar 200 créditos <ExternalLink className="w-4 h-4 ml-1" />
                 </Button>
               </a>
             </div>

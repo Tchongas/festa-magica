@@ -1,5 +1,5 @@
 import { PartyPopper, ExternalLink } from 'lucide-react';
-import { MEMBROS_URL } from '@/lib/config';
+import { HOTMART_40_CREDITS_URL, HOTMART_200_CREDITS_URL } from '@/lib/config';
 
 export function LandingFooter() {
   return (
@@ -26,10 +26,18 @@ export function LandingFooter() {
             <ul className="space-y-2">
               <li>
                 <a 
-                  href={MEMBROS_URL} 
+                  href={HOTMART_40_CREDITS_URL} 
                   className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base inline-flex items-center gap-1"
                 >
-                  Área de Membros <ExternalLink className="w-3 h-3" />
+                  Comprar 40 créditos <ExternalLink className="w-3 h-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href={HOTMART_200_CREDITS_URL} 
+                  className="text-gray-400 hover:text-pink-400 transition-colors text-sm md:text-base inline-flex items-center gap-1"
+                >
+                  Comprar 200 créditos <ExternalLink className="w-3 h-3" />
                 </a>
               </li>
               <li>

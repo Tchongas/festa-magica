@@ -3,7 +3,7 @@
 import { ExternalLink, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui';
 import Link from 'next/link';
-import { MEMBROS_URL } from '@/lib/config';
+import { HOTMART_40_CREDITS_URL, HOTMART_200_CREDITS_URL } from '@/lib/config';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function CTASection() {
@@ -44,12 +44,21 @@ export function CTASection() {
                   <LogIn className="w-5 h-5" /> Entrar / Criar conta
                 </Button>
               </Link>
-              <a href={MEMBROS_URL}>
+              <a href={HOTMART_40_CREDITS_URL}>
                 <Button
                   size="lg"
                   className="bg-white text-pink-600 hover:bg-gray-100 shadow-2xl text-lg px-10"
                 >
-                  Comprar <ExternalLink className="w-5 h-5 ml-2" />
+                  Comprar 40 créditos <ExternalLink className="w-5 h-5 ml-2" />
+                </Button>
+              </a>
+              <a href={HOTMART_200_CREDITS_URL}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-white/10 border-white/50 text-white hover:bg-white/20 text-lg px-10"
+                >
+                  Comprar 200 créditos <ExternalLink className="w-5 h-5 ml-2" />
                 </Button>
               </a>
             </>

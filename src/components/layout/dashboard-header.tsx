@@ -7,7 +7,7 @@ import { Button, Badge } from '@/components/ui';
 import { useKitCreatorStore } from '@/stores/kit-creator.store';
 import { useAuth } from '@/hooks/use-auth';
 
-import { MEMBROS_URL } from '@/lib/config';
+import { HOTMART_40_CREDITS_URL, HOTMART_200_CREDITS_URL } from '@/lib/config';
 
 export function DashboardHeader() {
   const { step, reset } = useKitCreatorStore();
@@ -74,10 +74,16 @@ export function DashboardHeader() {
                   <ListOrdered className="w-4 h-4" /> Histórico de Créditos
                 </Link>
                 <a 
-                  href={MEMBROS_URL}
+                  href={HOTMART_40_CREDITS_URL}
                   className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
                 >
-                  <ExternalLink className="w-4 h-4" /> Área de Membros
+                  <ExternalLink className="w-4 h-4" /> Comprar 40 créditos
+                </a>
+                <a 
+                  href={HOTMART_200_CREDITS_URL}
+                  className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" /> Comprar 200 créditos
                 </a>
                 <button
                   onClick={logout}
@@ -136,11 +142,19 @@ export function DashboardHeader() {
           </Link>
 
           <a 
-            href={MEMBROS_URL}
+            href={HOTMART_40_CREDITS_URL}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <ExternalLink className="w-4 h-4" /> Área de Membros
+            <ExternalLink className="w-4 h-4" /> Comprar 40 créditos
+          </a>
+
+          <a 
+            href={HOTMART_200_CREDITS_URL}
+            className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <ExternalLink className="w-4 h-4" /> Comprar 200 créditos
           </a>
           
           <button

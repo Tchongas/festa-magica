@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuthStore } from '@/stores/auth.store';
-import { MEMBROS_URL } from '@/lib/config';
 
 export function useAuth() {
   const { 
@@ -20,7 +19,7 @@ export function useAuth() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       storeLogout();
-      window.location.href = MEMBROS_URL;
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout failed:', error);
     }

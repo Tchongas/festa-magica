@@ -9,7 +9,7 @@ import { useKitCreatorStore } from "@/stores/kit-creator.store";
 import { useAuth } from "@/hooks/use-auth";
 import { KitItem } from "@/types";
 import { downloadAllFiles } from "@/lib/download";
-import { MEMBROS_URL } from "@/lib/config";
+import { HOTMART_40_CREDITS_URL, HOTMART_200_CREDITS_URL } from "@/lib/config";
 
 interface GenerationStepProps {
   onAnalyze: () => Promise<boolean>;
@@ -98,9 +98,9 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
             )}
           </div>
           {hasNoCredits && (
-            <a href={MEMBROS_URL} className="w-full sm:w-auto">
+            <a href={HOTMART_40_CREDITS_URL} className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto" variant="gradient">
-                Comprar créditos
+                Comprar 40 créditos
               </Button>
             </a>
           )}
@@ -198,7 +198,7 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
           creditsRequiredForGeneration={creditsRequiredForGeneration}
           creditsBalance={creditsBalance}
           onBuyCredits={() => {
-            window.location.href = MEMBROS_URL;
+            window.location.href = HOTMART_40_CREDITS_URL;
           }}
         />
       )}
@@ -266,9 +266,14 @@ export function GenerationStep({ onAnalyze, onUpdateDescriptions, onGenerate, on
               <Button variant="secondary" className="w-full" onClick={() => setShowNoCreditsModal(false)}>
                 Fechar
               </Button>
-              <a href={MEMBROS_URL} className="w-full">
+              <a href={HOTMART_40_CREDITS_URL} className="w-full">
                 <Button variant="gradient" className="w-full">
-                  Comprar créditos
+                  Comprar 40 créditos
+                </Button>
+              </a>
+              <a href={HOTMART_200_CREDITS_URL} className="w-full">
+                <Button variant="outline" className="w-full">
+                  Comprar 200 créditos
                 </Button>
               </a>
             </div>
