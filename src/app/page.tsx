@@ -1,23 +1,5 @@
-import {
-  LandingHeader,
-  LandingFooter,
-  HeroSection,
-  FeaturesSection,
-  KitShowcaseSection,
-  CTASection,
-} from "@/components/landing";
+import { HomepageRemix } from "@/components/landing/homepage-remix";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen">
-      <LandingHeader />
-      <main>
-        <HeroSection />
-        <FeaturesSection />
-        <KitShowcaseSection />
-        <CTASection />
-      </main>
-      <LandingFooter />
-    </div>
-  );
+  return <HomepageRemix />;
 }

@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fredoka, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth";
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
 });
 
@@ -20,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${fredoka.variable} font-sans antialiased`}>
         <AuthProvider>
           {children}
         </AuthProvider>
