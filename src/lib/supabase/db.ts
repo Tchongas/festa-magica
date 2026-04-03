@@ -50,9 +50,9 @@ export async function hasFestaMagicaProductByEmail(email: string): Promise<boole
   return true;
 }
 
-export async function ensureHubUserForAuthUser(
+export async function getOrCreateHubUserForAuthUser(
   authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> | null }
-): Promise<User> {
+): Promise<{ user: User; isNewUser: boolean }> {
   const supabase = createServiceRoleClient();
   const normalizedEmail = normalizeEmail(authUser.email);
 
@@ -89,10 +89,10 @@ export async function ensureHubUserForAuthUser(
         throw new Error(`Failed to update hub user: ${error?.message || 'unknown error'}`);
       }
 
-      return data as User;
+      return { user: data as User, isNewUser: false };
     }
 
-    return byEmail;
+    return { user: byEmail, isNewUser: false };
   }
 
   const { data: byId, error: byIdError } = await supabase
@@ -106,7 +106,7 @@ export async function ensureHubUserForAuthUser(
   }
 
   if (byId) {
-    return byId as User;
+    return { user: byId as User, isNewUser: false };
   }
 
   const { data: created, error: createError } = await supabase
@@ -123,7 +123,14 @@ export async function ensureHubUserForAuthUser(
     throw new Error(`Failed to create hub user: ${createError?.message || 'unknown error'}`);
   }
 
-  return created as User;
+  return { user: created as User, isNewUser: true };
+}
+
+export async function ensureHubUserForAuthUser(
+  authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> | null }
+): Promise<User> {
+  const result = await getOrCreateHubUserForAuthUser(authUser);
+  return result.user;
 }
 
 export async function getUserById(userId: string): Promise<User | null> {

@@ -11,6 +11,7 @@ export const MEMBROS_URL =
 
 export const HOTMART_40_CREDITS_URL = 'https://pay.hotmart.com/I104822104V';
 export const HOTMART_200_CREDITS_URL = 'https://pay.hotmart.com/T104822199S';
+export const META_PIXEL_ID = String(process.env.NEXT_PUBLIC_META_PIXEL_ID || '').trim();
 
 export const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,

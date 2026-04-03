@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  ensureHubUserForAuthUser,
+  getOrCreateHubUserForAuthUser,
   getActiveUserProduct,
   hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
-import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
+import { setSessionCookie, safeRedirectPath, withStartTrialFlagPath } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 const ALREADY_EXISTS_MSG =
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (data.user) {
-      const hubUser = await ensureHubUserForAuthUser(data.user);
+      const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
 
       if (data.session) {
         const subscription = await getActiveUserProduct(hubUser.id);
@@ -71,10 +71,11 @@ export async function POST(request: NextRequest) {
         }
 
         await setSessionCookie(hubUser.id);
+        const redirectPath = safeRedirectPath(redirect_to);
 
         return NextResponse.json({
           success: true,
-          redirect_to: safeRedirectPath(redirect_to),
+          redirect_to: isNewUser ? withStartTrialFlagPath(redirectPath) : redirectPath,
         });
       }
     }
