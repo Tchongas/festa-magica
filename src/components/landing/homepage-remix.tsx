@@ -222,7 +222,18 @@ export function HomepageRemix() {
       <section id="pricing" className="bg-purple-600 px-4 py-20 text-white">
         <div className="mx-auto w-full max-w-5xl">
           <h2 className="text-center font-fredoka text-4xl font-bold">Escolha seu pacote de creditos</h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl bg-white p-8 text-gray-900">
+              <p className="mb-4 flex items-center gap-2 text-sm font-bold uppercase text-gray-500"><LogIn className="h-4 w-4" /> Teste gratis</p>
+              <p className="text-5xl font-bold text-emerald-600">5</p>
+              <p className="mb-6 font-semibold">creditos para experimentar</p>
+              <ul className="mb-8 space-y-2">
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Primeiro acesso gratuito</li>
+                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Ideal para testar a plataforma</li>
+              </ul>
+              <Link href="/entrar"><Button className="w-full">Entrar / Criar conta</Button></Link>
+            </div>
+
             <div className="rounded-3xl bg-white p-8 text-gray-900">
               <p className="mb-4 flex items-center gap-2 text-sm font-bold uppercase text-gray-500"><User className="h-4 w-4" /> Pacote essencial</p>
               <p className="text-5xl font-bold text-purple-600">40</p>
