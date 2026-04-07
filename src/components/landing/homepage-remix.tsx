@@ -143,8 +143,8 @@ export function HomepageRemix() {
               ) : (
                 <>
                   <Link href="/entrar"><Button size="lg" variant="outline"><LogIn className="h-4 w-4" /> Entrar</Button></Link>
-                  <a href={HOTMART_40_CREDITS_URL}><Button size="lg">Comprar 40 creditos <ExternalLink className="h-4 w-4" /></Button></a>
-                  <a href={HOTMART_200_CREDITS_URL}><Button size="lg" variant="outline">Comprar 200 creditos <ExternalLink className="h-4 w-4" /></Button></a>
+                  <a href={HOTMART_40_CREDITS_URL}><Button size="lg">Comprar 20 creditos <ExternalLink className="h-4 w-4" /></Button></a>
+                  <a href={HOTMART_200_CREDITS_URL}><Button size="lg" variant="outline">Comprar 100 creditos <ExternalLink className="h-4 w-4" /></Button></a>
                 </>
               )}
             </div>
@@ -236,24 +236,24 @@ export function HomepageRemix() {
 
             <div className="rounded-3xl bg-white p-8 text-gray-900">
               <p className="mb-4 flex items-center gap-2 text-sm font-bold uppercase text-gray-500"><User className="h-4 w-4" /> Pacote essencial</p>
-              <p className="text-5xl font-bold text-purple-600">40</p>
+              <p className="text-5xl font-bold text-purple-600">20</p>
               <p className="mb-6 font-semibold">creditos para gerar imagens</p>
               <ul className="mb-8 space-y-2">
                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Compra unica</li>
                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Acesso imediato</li>
               </ul>
-              <a href={HOTMART_40_CREDITS_URL}><Button className="w-full">Comprar 40 creditos</Button></a>
+              <a href={HOTMART_40_CREDITS_URL}><Button className="w-full">Comprar 20 creditos</Button></a>
             </div>
 
             <div className="rounded-3xl bg-white p-8 text-gray-900">
               <p className="mb-4 flex items-center gap-2 text-sm font-bold uppercase text-gray-500"><Briefcase className="h-4 w-4" /> Pacote profissional</p>
-              <p className="text-5xl font-bold text-pink-500">200</p>
+              <p className="text-5xl font-bold text-pink-500">100</p>
               <p className="mb-6 font-semibold">creditos para alto volume</p>
               <ul className="mb-8 space-y-2">
                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Melhor custo por geracao</li>
                 <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Ideal para uso profissional</li>
               </ul>
-              <a href={HOTMART_200_CREDITS_URL}><Button className="w-full">Comprar 200 creditos</Button></a>
+              <a href={HOTMART_200_CREDITS_URL}><Button className="w-full">Comprar 100 creditos</Button></a>
             </div>
           </div>
         </div>
@@ -280,8 +280,8 @@ export function HomepageRemix() {
           <p className="font-fredoka text-3xl font-bold text-purple-600">Festa Magica IA</p>
           <p className="mt-2 text-gray-500">Inteligencia artificial para momentos inesqueciveis.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <a href={HOTMART_40_CREDITS_URL}><Button size="sm">40 creditos</Button></a>
-            <a href={HOTMART_200_CREDITS_URL}><Button size="sm" variant="outline">200 creditos</Button></a>
+            <a href={HOTMART_40_CREDITS_URL}><Button size="sm">20 creditos</Button></a>
+            <a href={HOTMART_200_CREDITS_URL}><Button size="sm" variant="outline">100 creditos</Button></a>
             <Link href="/entrar"><Button size="sm" variant="ghost">Entrar</Button></Link>
           </div>
         </div>
