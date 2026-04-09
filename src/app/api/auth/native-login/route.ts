@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getOrCreateHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { setSessionCookie } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 });
     }
 
-    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+    const hubUser = await ensureHubUserForAuthUser(data.user);
 
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription && !CREDITS_FEATURE_ENABLED) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     await setSessionCookie(hubUser.id);
 
-    return NextResponse.json({ success: true, start_trial: isNewUser });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Native login error:', error);
     return NextResponse.json({ error: 'Erro no login' }, { status: 500 });

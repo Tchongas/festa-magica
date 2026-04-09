@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrCreateHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
-import { setSessionCookie, safeRedirectPath, withStartTrialFlagPath } from '@/lib/auth/helpers';
+import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
 const LOGIN_ERROR_MAP: Record<string, string> = {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: mapLoginError(error?.message) }, { status: 401 });
     }
 
-    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+    const hubUser = await ensureHubUserForAuthUser(data.user);
     const subscription = await getActiveUserProduct(hubUser.id);
 
     if (!subscription && !CREDITS_FEATURE_ENABLED) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      redirect_to: isNewUser ? withStartTrialFlagPath(redirectPath) : redirectPath,
+      redirect_to: redirectPath,
     });
   } catch (error) {
     console.error('Email login error:', error);

@@ -1,6 +1,46 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { CREDITS_STARTER_BALANCE } from '@/lib/config';
 
+const META_PIXEL_ID = String(process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || '').trim();
+const META_ACCESS_TOKEN = String(process.env.META_ACCESS_TOKEN || process.env.META_PIXEL_ACCESS_TOKEN || '').trim();
+
+async function trackWalletStartTrial(userId: string): Promise<void> {
+  if (!META_PIXEL_ID || !META_ACCESS_TOKEN) return;
+
+  const url = `https://graph.facebook.com/v22.0/${META_PIXEL_ID}/events?access_token=${encodeURIComponent(META_ACCESS_TOKEN)}`;
+  const payload = {
+    data: [
+      {
+        event_name: 'StartTrial',
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: 'system_generated',
+        event_id: `wallet-init:${userId}`,
+        user_data: {
+          external_id: userId,
+        },
+        custom_data: {
+          starter_credits: CREDITS_STARTER_BALANCE,
+        },
+      },
+    ],
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('Meta StartTrial CAPI error:', response.status, errorBody);
+    }
+  } catch (error) {
+    console.error('Meta StartTrial CAPI request failed:', error);
+  }
+}
+
 interface ReserveCreditsInput {
   userId: string;
   kitItemType: string;
@@ -113,6 +153,10 @@ export async function getCreditsBalance(userId: string): Promise<number> {
 
   if (ensureError && ensureError.code !== '23505') {
     throw new Error(`Failed to initialize credits wallet: ${ensureError.message}`);
+  }
+
+  if (!ensureError) {
+    void trackWalletStartTrial(userId);
   }
 
   const { data, error } = await supabase

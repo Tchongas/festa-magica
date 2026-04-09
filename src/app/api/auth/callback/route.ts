@@ -6,11 +6,11 @@ import {
   getActiveUserProduct,
   checkNonceUsed,
   markNonceUsed,
-  getOrCreateHubUserForAuthUser,
+  ensureHubUserForAuthUser,
   hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 import { createSupabaseServer } from '@/lib/supabase/server';
-import { setSessionCookie, resolveRedirectUrl, withStartTrialFlagUrl } from '@/lib/auth/helpers';
+import { setSessionCookie, resolveRedirectUrl } from '@/lib/auth/helpers';
 import { MEMBROS_URL } from '@/lib/config';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
 
@@ -84,7 +84,7 @@ async function handleOAuthCallback(code: string, origin: string) {
       return NextResponse.redirect(`${origin}/entrar?error=no_product`);
     }
 
-    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(authUser);
+    const hubUser = await ensureHubUserForAuthUser(authUser);
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription && !CREDITS_FEATURE_ENABLED) {
       await supabase.auth.signOut();
@@ -93,7 +93,7 @@ async function handleOAuthCallback(code: string, origin: string) {
 
     await setSessionCookie(hubUser.id);
     const redirectUrl = await resolveRedirectUrl(origin);
-    return NextResponse.redirect(isNewUser ? withStartTrialFlagUrl(redirectUrl) : redirectUrl);
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('OAuth callback error:', error);
     return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);

@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
 import Script from "next/script";
-import { usePathname } from "next/navigation";
 import { META_PIXEL_ID } from "@/lib/config";
 
 declare global {
@@ -12,52 +10,7 @@ declare global {
   }
 }
 
-const MAX_START_TRIAL_ATTEMPTS = 20;
-const START_TRIAL_RETRY_MS = 250;
-
-function removeStartTrialQueryFlag(): void {
-  const url = new URL(window.location.href);
-  if (!url.searchParams.has("start_trial")) return;
-
-  url.searchParams.delete("start_trial");
-  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
-  window.history.replaceState({}, "", nextUrl);
-}
-
 export function MetaPixelTracker() {
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (!META_PIXEL_ID || typeof window === "undefined") {
-      return;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("start_trial") !== "1") return;
-
-    let attempts = 0;
-    const tryTrackStartTrial = () => {
-      if (typeof window.fbq === "function") {
-        window.fbq("track", "StartTrial");
-        removeStartTrialQueryFlag();
-        return true;
-      }
-      return false;
-    };
-
-    if (tryTrackStartTrial()) return;
-
-    const timer = window.setInterval(() => {
-      attempts += 1;
-
-      if (tryTrackStartTrial() || attempts >= MAX_START_TRIAL_ATTEMPTS) {
-        window.clearInterval(timer);
-      }
-    }, START_TRIAL_RETRY_MS);
-
-    return () => window.clearInterval(timer);
-  }, [pathname]);
-
   if (!META_PIXEL_ID) return null;
 
   return (

@@ -11,20 +11,6 @@ export function safeRedirectPath(redirectTo?: string | null): string {
   return redirectTo.startsWith('/') ? redirectTo : DEFAULT_REDIRECT;
 }
 
-export function withStartTrialFlagPath(redirectPath: string): string {
-  const [pathname, query = ''] = redirectPath.split('?');
-  const params = new URLSearchParams(query);
-  params.set('start_trial', '1');
-  const serialized = params.toString();
-  return serialized ? `${pathname}?${serialized}` : pathname;
-}
-
-export function withStartTrialFlagUrl(redirectUrl: string): string {
-  const parsed = new URL(redirectUrl);
-  parsed.searchParams.set('start_trial', '1');
-  return parsed.toString();
-}
-
 export async function setSessionCookie(userId: string): Promise<void> {
   const token = await createSession(userId);
   const cookieStore = await cookies();
