@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getOrCreateHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { setSessionCookie } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
-import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
+import { logStartTrialCheckpoint } from '@/lib/analytics/meta';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,21 +40,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 });
     }
 
-    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+    const hubUser = await ensureHubUserForAuthUser(data.user);
     logStartTrialCheckpoint('auth_native_login_hub_user_resolved', {
       authUserId: data.user.id,
       hubUserId: hubUser.id,
-      isNewUser,
     });
-
-    if (isNewUser) {
-      void sendStartTrialEvent({
-        userId: hubUser.id,
-        email: hubUser.email,
-        source: 'auth_native_login',
-        eventId: `account-created:${hubUser.id}`,
-      });
-    }
 
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription && !CREDITS_FEATURE_ENABLED) {

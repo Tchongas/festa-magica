@@ -6,13 +6,13 @@ import {
   getActiveUserProduct,
   checkNonceUsed,
   markNonceUsed,
-  getOrCreateHubUserForAuthUser,
+  ensureHubUserForAuthUser,
 } from '@/lib/supabase/db';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { setSessionCookie, resolveRedirectUrl } from '@/lib/auth/helpers';
 import { MEMBROS_URL } from '@/lib/config';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
-import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
+import { logStartTrialCheckpoint } from '@/lib/analytics/meta';
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -84,21 +84,11 @@ async function handleOAuthCallback(code: string, origin: string) {
       return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);
     }
 
-    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(authUser);
+    const hubUser = await ensureHubUserForAuthUser(authUser);
     logStartTrialCheckpoint('auth_oauth_callback_hub_user_resolved', {
       authUserId: authUser.id,
       hubUserId: hubUser.id,
-      isNewUser,
     });
-
-    if (isNewUser) {
-      void sendStartTrialEvent({
-        userId: hubUser.id,
-        email: hubUser.email,
-        source: 'auth_oauth_callback',
-        eventId: `account-created:${hubUser.id}`,
-      });
-    }
 
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription && !CREDITS_FEATURE_ENABLED) {

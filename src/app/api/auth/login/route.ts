@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrCreateHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
-import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
+import { logStartTrialCheckpoint } from '@/lib/analytics/meta';
 
 const LOGIN_ERROR_MAP: Record<string, string> = {
   'email not confirmed': 'Confirme seu email antes de entrar.',
@@ -46,21 +46,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: mapLoginError(error?.message) }, { status: 401 });
     }
 
-    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+    const hubUser = await ensureHubUserForAuthUser(data.user);
     logStartTrialCheckpoint('auth_login_hub_user_resolved', {
       authUserId: data.user.id,
       hubUserId: hubUser.id,
-      isNewUser,
     });
-
-    if (isNewUser) {
-      void sendStartTrialEvent({
-        userId: hubUser.id,
-        email: hubUser.email,
-        source: 'auth_login',
-        eventId: `account-created:${hubUser.id}`,
-      });
-    }
 
     const subscription = await getActiveUserProduct(hubUser.id);
 

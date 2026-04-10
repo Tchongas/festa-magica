@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getOrCreateHubUserForAuthUser,
+  ensureHubUserForAuthUser,
   getActiveUserProduct,
 } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
-import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
+import { logStartTrialCheckpoint } from '@/lib/analytics/meta';
 
 const ALREADY_EXISTS_MSG =
   'Este email já está em uso. Se sua conta foi criada com Google, clique em "Continuar com Google".';
@@ -61,21 +61,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (data.user) {
-      const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+      const hubUser = await ensureHubUserForAuthUser(data.user);
       logStartTrialCheckpoint('auth_register_hub_user_resolved', {
         authUserId: data.user.id,
         hubUserId: hubUser.id,
-        isNewUser,
       });
-
-      if (isNewUser) {
-        void sendStartTrialEvent({
-          userId: hubUser.id,
-          email: hubUser.email,
-          source: 'auth_register',
-          eventId: `account-created:${hubUser.id}`,
-        });
-      }
 
       if (data.session) {
         const subscription = await getActiveUserProduct(hubUser.id);
