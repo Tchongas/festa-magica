@@ -1,6 +1,7 @@
 import { createServiceRoleClient } from './server';
 import { User, UserProduct } from '@/types';
 import { PRODUCT_ID } from '@/lib/config';
+import { logStartTrialCheckpoint } from '@/lib/analytics/meta';
 
 function normalizeEmail(email?: string | null): string {
   return String(email || '').trim().toLowerCase();
@@ -56,7 +57,13 @@ export async function getOrCreateHubUserForAuthUser(
   const supabase = createServiceRoleClient();
   const normalizedEmail = normalizeEmail(authUser.email);
 
+  logStartTrialCheckpoint('hub_user_get_or_create_start', {
+    authUserId: authUser.id,
+    hasEmail: !!normalizedEmail,
+  });
+
   if (!normalizedEmail) {
+    logStartTrialCheckpoint('hub_user_get_or_create_missing_email', { authUserId: authUser.id });
     throw new Error('Authenticated user does not have a valid email');
   }
 
@@ -67,6 +74,11 @@ export async function getOrCreateHubUserForAuthUser(
 
   const byEmail = await getUserByEmail(normalizedEmail);
   if (byEmail) {
+    logStartTrialCheckpoint('hub_user_found_by_email', {
+      authUserId: authUser.id,
+      hubUserId: byEmail.id,
+      normalizedEmail,
+    });
     const updates: Partial<User> = {};
 
     if ((byEmail.email || '').toLowerCase() !== normalizedEmail) {
@@ -89,6 +101,11 @@ export async function getOrCreateHubUserForAuthUser(
         throw new Error(`Failed to update hub user: ${error?.message || 'unknown error'}`);
       }
 
+      logStartTrialCheckpoint('hub_user_updated_by_email_match', {
+        authUserId: authUser.id,
+        hubUserId: data.id,
+      });
+
       return { user: data as User, isNewUser: false };
     }
 
@@ -106,6 +123,10 @@ export async function getOrCreateHubUserForAuthUser(
   }
 
   if (byId) {
+    logStartTrialCheckpoint('hub_user_found_by_id', {
+      authUserId: authUser.id,
+      hubUserId: byId.id,
+    });
     return { user: byId as User, isNewUser: false };
   }
 
@@ -122,6 +143,12 @@ export async function getOrCreateHubUserForAuthUser(
   if (createError || !created) {
     throw new Error(`Failed to create hub user: ${createError?.message || 'unknown error'}`);
   }
+
+  logStartTrialCheckpoint('hub_user_created', {
+    authUserId: authUser.id,
+    hubUserId: created.id,
+    normalizedEmail,
+  });
 
   return { user: created as User, isNewUser: true };
 }

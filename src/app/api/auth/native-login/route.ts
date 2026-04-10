@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { getOrCreateHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { setSessionCookie } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
+import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
 
 export async function POST(request: NextRequest) {
   try {
     const { accessToken } = await request.json();
+    logStartTrialCheckpoint('auth_native_login_request_received', {
+      hasAccessToken: !!accessToken,
+      tokenLength: typeof accessToken === 'string' ? accessToken.length : 0,
+    });
 
     if (!accessToken || typeof accessToken !== 'string') {
       return NextResponse.json({ error: 'Token ausente' }, { status: 400 });
@@ -28,10 +33,28 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
+      logStartTrialCheckpoint('auth_native_login_get_user_failed', {
+        hasUser: !!data?.user,
+        message: error?.message || null,
+      });
       return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 });
     }
 
-    const hubUser = await ensureHubUserForAuthUser(data.user);
+    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+    logStartTrialCheckpoint('auth_native_login_hub_user_resolved', {
+      authUserId: data.user.id,
+      hubUserId: hubUser.id,
+      isNewUser,
+    });
+
+    if (isNewUser) {
+      void sendStartTrialEvent({
+        userId: hubUser.id,
+        email: hubUser.email,
+        source: 'auth_native_login',
+        eventId: `account-created:${hubUser.id}`,
+      });
+    }
 
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription && !CREDITS_FEATURE_ENABLED) {

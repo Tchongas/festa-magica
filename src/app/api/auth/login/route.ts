@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ensureHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
+import { getOrCreateHubUserForAuthUser, getActiveUserProduct } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
+import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
 
 const LOGIN_ERROR_MAP: Record<string, string> = {
   'email not confirmed': 'Confirme seu email antes de entrar.',
@@ -20,6 +21,10 @@ function mapLoginError(message?: string): string {
 export async function POST(request: NextRequest) {
   try {
     const { email, password, redirect_to } = await request.json();
+    logStartTrialCheckpoint('auth_login_request_received', {
+      hasEmail: !!email,
+      hasRedirectTo: !!redirect_to,
+    });
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios' }, { status: 400 });
@@ -33,10 +38,30 @@ export async function POST(request: NextRequest) {
     });
 
     if (error || !data.user || !data.session) {
+      logStartTrialCheckpoint('auth_login_failed', {
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        message: error?.message || null,
+      });
       return NextResponse.json({ error: mapLoginError(error?.message) }, { status: 401 });
     }
 
-    const hubUser = await ensureHubUserForAuthUser(data.user);
+    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+    logStartTrialCheckpoint('auth_login_hub_user_resolved', {
+      authUserId: data.user.id,
+      hubUserId: hubUser.id,
+      isNewUser,
+    });
+
+    if (isNewUser) {
+      void sendStartTrialEvent({
+        userId: hubUser.id,
+        email: hubUser.email,
+        source: 'auth_login',
+        eventId: `account-created:${hubUser.id}`,
+      });
+    }
+
     const subscription = await getActiveUserProduct(hubUser.id);
 
     if (!subscription && !CREDITS_FEATURE_ENABLED) {

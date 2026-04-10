@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  ensureHubUserForAuthUser,
+  getOrCreateHubUserForAuthUser,
   getActiveUserProduct,
   hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
+import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
 
 const ALREADY_EXISTS_MSG =
   'Este email já está em uso. Se sua conta foi criada com Google, clique em "Continuar com Google".';
@@ -14,6 +15,11 @@ const ALREADY_EXISTS_MSG =
 export async function POST(request: NextRequest) {
   try {
     const { email, password, name, redirect_to } = await request.json();
+    logStartTrialCheckpoint('auth_register_request_received', {
+      hasEmail: !!email,
+      hasName: !!name,
+      hasRedirectTo: !!redirect_to,
+    });
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios' }, { status: 400 });
@@ -27,6 +33,7 @@ export async function POST(request: NextRequest) {
     const normalizedName = String(name || '').trim();
 
     const hasAccess = await hasFestaMagicaProductByEmail(normalizedEmail);
+    logStartTrialCheckpoint('auth_register_access_check', { normalizedEmail, hasAccess });
     if (!hasAccess) {
       return NextResponse.json(
         { error: 'Não encontramos o produto Festa Mágica para este email. Use o email da compra ou fale com o suporte.' },
@@ -48,6 +55,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+      logStartTrialCheckpoint('auth_register_supabase_signup_error', {
+        normalizedEmail,
+        message: error.message,
+      });
       if (error.message.toLowerCase().includes('already')) {
         return NextResponse.json({ error: ALREADY_EXISTS_MSG }, { status: 409 });
       }
@@ -55,11 +66,26 @@ export async function POST(request: NextRequest) {
     }
 
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      logStartTrialCheckpoint('auth_register_existing_user_identity_empty', { normalizedEmail });
       return NextResponse.json({ error: ALREADY_EXISTS_MSG }, { status: 409 });
     }
 
     if (data.user) {
-      const hubUser = await ensureHubUserForAuthUser(data.user);
+      const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(data.user);
+      logStartTrialCheckpoint('auth_register_hub_user_resolved', {
+        authUserId: data.user.id,
+        hubUserId: hubUser.id,
+        isNewUser,
+      });
+
+      if (isNewUser) {
+        void sendStartTrialEvent({
+          userId: hubUser.id,
+          email: hubUser.email,
+          source: 'auth_register',
+          eventId: `account-created:${hubUser.id}`,
+        });
+      }
 
       if (data.session) {
         const subscription = await getActiveUserProduct(hubUser.id);

@@ -1,44 +1,14 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { CREDITS_STARTER_BALANCE } from '@/lib/config';
-
-const META_PIXEL_ID = String(process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || '').trim();
-const META_ACCESS_TOKEN = String(process.env.META_ACCESS_TOKEN || process.env.META_PIXEL_ACCESS_TOKEN || '').trim();
+import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
 
 async function trackWalletStartTrial(userId: string): Promise<void> {
-  if (!META_PIXEL_ID || !META_ACCESS_TOKEN) return;
-
-  const url = `https://graph.facebook.com/v22.0/${META_PIXEL_ID}/events?access_token=${encodeURIComponent(META_ACCESS_TOKEN)}`;
-  const payload = {
-    data: [
-      {
-        event_name: 'StartTrial',
-        event_time: Math.floor(Date.now() / 1000),
-        action_source: 'system_generated',
-        event_id: `wallet-init:${userId}`,
-        user_data: {
-          external_id: userId,
-        },
-        custom_data: {
-          starter_credits: CREDITS_STARTER_BALANCE,
-        },
-      },
-    ],
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Meta StartTrial CAPI error:', response.status, errorBody);
-    }
-  } catch (error) {
-    console.error('Meta StartTrial CAPI request failed:', error);
-  }
+  logStartTrialCheckpoint('wallet_init_event_triggered', { userId });
+  await sendStartTrialEvent({
+    userId,
+    source: 'wallet_init',
+    eventId: `wallet-init:${userId}`,
+  });
 }
 
 interface ReserveCreditsInput {
@@ -141,6 +111,7 @@ function assertSetBalanceInput(input: SetCreditsBalanceInput): void {
 
 export async function getCreditsBalance(userId: string): Promise<number> {
   const supabase = createServiceRoleClient();
+  logStartTrialCheckpoint('wallet_balance_check_start', { userId });
 
   const { error: ensureError } = await supabase
     .from('user_credit_wallets')
@@ -150,6 +121,13 @@ export async function getCreditsBalance(userId: string): Promise<number> {
     })
     .select('user_id')
     .maybeSingle();
+
+  logStartTrialCheckpoint('wallet_insert_attempt_result', {
+    userId,
+    hadError: !!ensureError,
+    errorCode: ensureError?.code || null,
+    errorMessage: ensureError?.message || null,
+  });
 
   if (ensureError && ensureError.code !== '23505') {
     throw new Error(`Failed to initialize credits wallet: ${ensureError.message}`);

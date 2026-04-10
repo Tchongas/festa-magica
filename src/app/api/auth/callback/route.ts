@@ -6,13 +6,14 @@ import {
   getActiveUserProduct,
   checkNonceUsed,
   markNonceUsed,
-  ensureHubUserForAuthUser,
+  getOrCreateHubUserForAuthUser,
   hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { setSessionCookie, resolveRedirectUrl } from '@/lib/auth/helpers';
 import { MEMBROS_URL } from '@/lib/config';
 import { CREDITS_FEATURE_ENABLED } from '@/lib/config';
+import { logStartTrialCheckpoint, sendStartTrialEvent } from '@/lib/analytics/meta';
 
 export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
@@ -63,10 +64,15 @@ async function handleTokenCallback(token: string, origin: string) {
 
 async function handleOAuthCallback(code: string, origin: string) {
   try {
+    logStartTrialCheckpoint('auth_oauth_callback_received', { hasCode: !!code, origin });
     const supabase = await createSupabaseServer();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error || !data.user) {
+      logStartTrialCheckpoint('auth_oauth_callback_exchange_failed', {
+        hasUser: !!data?.user,
+        message: error?.message || null,
+      });
       return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);
     }
 
@@ -74,17 +80,34 @@ async function handleOAuthCallback(code: string, origin: string) {
     const normalizedEmail = String(authUser.email || '').trim().toLowerCase();
 
     if (!normalizedEmail) {
+      logStartTrialCheckpoint('auth_oauth_callback_missing_email', { authUserId: authUser.id });
       await supabase.auth.signOut();
       return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);
     }
 
     const hasProduct = await hasFestaMagicaProductByEmail(normalizedEmail);
+    logStartTrialCheckpoint('auth_oauth_callback_access_check', { normalizedEmail, hasProduct });
     if (!hasProduct) {
       await supabase.auth.signOut();
       return NextResponse.redirect(`${origin}/entrar?error=no_product`);
     }
 
-    const hubUser = await ensureHubUserForAuthUser(authUser);
+    const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(authUser);
+    logStartTrialCheckpoint('auth_oauth_callback_hub_user_resolved', {
+      authUserId: authUser.id,
+      hubUserId: hubUser.id,
+      isNewUser,
+    });
+
+    if (isNewUser) {
+      void sendStartTrialEvent({
+        userId: hubUser.id,
+        email: hubUser.email,
+        source: 'auth_oauth_callback',
+        eventId: `account-created:${hubUser.id}`,
+      });
+    }
+
     const subscription = await getActiveUserProduct(hubUser.id);
     if (!subscription && !CREDITS_FEATURE_ENABLED) {
       await supabase.auth.signOut();
