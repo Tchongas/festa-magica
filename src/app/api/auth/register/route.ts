@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getOrCreateHubUserForAuthUser,
   getActiveUserProduct,
-  hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 import { createAnonClient } from '@/lib/supabase/anon-client';
 import { setSessionCookie, safeRedirectPath } from '@/lib/auth/helpers';
@@ -31,15 +30,6 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = String(email).trim().toLowerCase();
     const normalizedName = String(name || '').trim();
-
-    const hasAccess = await hasFestaMagicaProductByEmail(normalizedEmail);
-    logStartTrialCheckpoint('auth_register_access_check', { normalizedEmail, hasAccess });
-    if (!hasAccess) {
-      return NextResponse.json(
-        { error: 'Não encontramos o produto Festa Mágica para este email. Use o email da compra ou fale com o suporte.' },
-        { status: 403 }
-      );
-    }
 
     const supabase = createAnonClient();
 

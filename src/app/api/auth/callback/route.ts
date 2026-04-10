@@ -7,7 +7,6 @@ import {
   checkNonceUsed,
   markNonceUsed,
   getOrCreateHubUserForAuthUser,
-  hasFestaMagicaProductByEmail,
 } from '@/lib/supabase/db';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { setSessionCookie, resolveRedirectUrl } from '@/lib/auth/helpers';
@@ -83,13 +82,6 @@ async function handleOAuthCallback(code: string, origin: string) {
       logStartTrialCheckpoint('auth_oauth_callback_missing_email', { authUserId: authUser.id });
       await supabase.auth.signOut();
       return NextResponse.redirect(`${origin}/entrar?error=oauth_failed`);
-    }
-
-    const hasProduct = await hasFestaMagicaProductByEmail(normalizedEmail);
-    logStartTrialCheckpoint('auth_oauth_callback_access_check', { normalizedEmail, hasProduct });
-    if (!hasProduct) {
-      await supabase.auth.signOut();
-      return NextResponse.redirect(`${origin}/entrar?error=no_product`);
     }
 
     const { user: hubUser, isNewUser } = await getOrCreateHubUserForAuthUser(authUser);
